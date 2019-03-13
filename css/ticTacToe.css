@@ -1,0 +1,39 @@
+/* Based on markup described at: https://eddyerburgh.me/make-responsive-tic-tac-toe-board */
+table {
+    width: 34vw;
+    border-collapse: collapse;
+}
+
+td {
+    width: 33.333%;
+    border: 1vw solid black;
+    text-align: center;
+    vertical-align: super;
+    font-size: 9vw;
+}
+
+td::after {
+    content: "";
+    display: inline-block;
+    margin-top: 100%;
+}
+
+
+td:first-of-type {
+    border-left-color: transparent;
+    border-top-color: transparent;
+}
+
+td:nth-of-type(2) {
+    border-top-color: transparent;
+}
+
+td:nth-of-type(3) {
+    border-right-color: transparent;
+    border-top-color: transparent;
+}
+
+tr:nth-of-type(3) td {
+    border-bottom-color: transparent;
+}
+
