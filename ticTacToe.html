@@ -2,13 +2,83 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Tic-Tac-Toe</title>
-    <link rel="stylesheet" href="css/ticTacToe.css">
-    <script defer src="js/ticTacToe.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="css/hawkinsGame.css"/>
+    <script type="text/javascript" src="js/ticTacToe.js" async></script>
+    <title>Tic-tac-toe</title>
 </head>
 <body>
-<span id="spanInstructions"></span>
-<span id="spanGameboard"></span>
-<span id="spanResult"></span>
+
+<!-- Modal preferences dialog. Hidden while not in use. -->
+<div id="preferences" class="modal">
+    <div id="divPreferenceDialog" class="modal-content">
+        <div id="btnClosePreferences" class="modalClose" onClick="dialogPreferences.style.display='none'">&times;</div>
+        <h3 class="modalText modalHeading">Preferences: </h3>
+        <p class="indent">
+            <span class="modalText">
+                <!-- Select control for number of incorrect guesses before loss.  -->
+                <span class="modalText modalLabel"><label for="gameDifficulty">Difficulty:&nbsp;&nbsp;</label>
+                    <select id="gameDifficulty" onChange="updateDifficulty()">
+                        <option value="1">Normal&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</option>
+                        <option value="2">Hard</option>
+                        <option value="3">Epic</option>
+                        <option value="4">Stupid</option>
+                    </select>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                </span>
+            </span>
+        </p>
+        <p>&nbsp;</p>
+        <div id="divWordCount" class="modalText indent"></div>
+    </div>
+</div>
+
+<!-- Modal help dialog. Hidden while not in use. -->
+<div id="help" class="modal">
+    <div id="divHelpDialog" class="modal-content">
+        <div id="btnCloseHelp" class="modalClose" onClick="dialogHelp.style.display='none'">&times;</div>
+        <h3 class="modalText modalHeading">Help! </h3>
+        <p class="indent helpText">
+            <a href="https://en.wikipedia.org/wiki/Tic-tac-toe" target="_blank">Tic-tac-toe</a>
+            is a traditional usually children's game where players take turns placing a mark in a
+            3 x 3 grid until one of them has three in a row, or until no squares are left.
+        </p>
+        <p class="indent helpText">
+            Guesses can be made by pressing keys on the keyboard while the game window is active, or by selecting
+            (clicking or touching) the square of the tic-tac-toe board where a mark should be
+            placed. Difficulty settings affect how likely the computer is to make a poor choice.
+        </p>
+        <p class="indent helpText helpEnd">
+            Good luck!
+        </p>
+    </div>
+</div>
+
+<!-- Modal about dialog. Hidden while not in use. -->
+<div id="about" class="modal">
+    <div id="divAboutDialog" class="modal-content">
+        <div id="btnCloseAbout" class="modalClose" onClick="dialogAbout.style.display='none'">&times;</div>
+        <h3 class="modalText modalHeading">About Hangman</h3>
+        <p class="indent helpText">
+            This implementation of Tic-tac-toe is intended to illustrate the relatively new CSS
+            Grid module (supported by major browsers beginning late in 2017). If you are reading
+            this in 2025, I suppose it's not really new anymore.
+        </p>
+        <p class="indent helpText">
+            Full source code is available at
+            <a href="https://github.com/HumanJHawkins/tic-tac-toe"
+               target="_blank">https://github.com/HumanJHawkins/tic-tac-toe</a>, with the
+            most interesting bits (to me anyway) in the .css file there.
+        </p>
+        <p class="indent helpText helpEnd">
+            Copyright &copy; 2019 Jeff Hawkins except as noted in the code.
+        </p>
+    </div>
+</div>
+
+<!-- "entirePage" div populated by javascript based on window size and aspect ratio. -->
+<div id="entirePage">
+</div>
 </body>
 </html>
+
+
