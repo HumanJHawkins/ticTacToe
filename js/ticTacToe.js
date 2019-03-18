@@ -100,15 +100,15 @@ function handleDisplayRefresh() {
 
     document.getElementById('divGameboard').innerHTML =
         '<grid-container>\n' +
-        '    <grid-item onclick="handleMark(0)" class="top left"><span id="cell0"></span></grid-item>\n' +
-        '    <grid-item onclick="handleMark(1)" class="top"><span id="cell1"></span></grid-item>\n' +
-        '    <grid-item onclick="handleMark(2)" class="top right"><span id="cell2"></span></grid-item>\n' +
-        '    <grid-item onclick="handleMark(3)" class="left"><span id="cell3"></span></grid-item>\n' +
-        '    <grid-item onclick="handleMark(4)" ><span id="cell4"></span></grid-item>\n' +
-        '    <grid-item onclick="handleMark(5)" class="right"><span id="cell5"></span></grid-item>\n' +
-        '    <grid-item onclick="handleMark(6)" class="bottom left"><span id="cell6"></span></grid-item>\n' +
-        '    <grid-item onclick="handleMark(7)" class="bottom"><span id="cell7"></span></grid-item>\n' +
-        '    <grid-item onclick="handleMark(8)" class="bottom right"><span id="cell8"></span></grid-item>\n' +
+        '    <grid-item onclick="handleMark(0)" class="top left"><span id="cell0" class="gameLetter"></span></grid-item>\n' +
+        '    <grid-item onclick="handleMark(1)" class="top"><span id="cell1" class="gameLetter"></span></grid-item>\n' +
+        '    <grid-item onclick="handleMark(2)" class="top right"><span id="cell2" class="gameLetter"></span></grid-item>\n' +
+        '    <grid-item onclick="handleMark(3)" class="left"><span id="cell3" class="gameLetter"></span></grid-item>\n' +
+        '    <grid-item onclick="handleMark(4)" ><span id="cell4" class="gameLetter"></span></grid-item>\n' +
+        '    <grid-item onclick="handleMark(5)" class="right"><span id="cell5" class="gameLetter"></span></grid-item>\n' +
+        '    <grid-item onclick="handleMark(6)" class="bottom left"><span id="cell6" class="gameLetter"></span></grid-item>\n' +
+        '    <grid-item onclick="handleMark(7)" class="bottom"><span id="cell7" class="gameLetter"></span></grid-item>\n' +
+        '    <grid-item onclick="handleMark(8)" class="bottom right"><span id="cell8" class="gameLetter"></span></grid-item>\n' +
         '</grid-container>';
 
     updateMarks();
@@ -116,7 +116,15 @@ function handleDisplayRefresh() {
 
 function updateMarks() {
     for(let i = 0; i < gameMarks.length; i++) {
-        document.getElementById('cell' + i).innerHTML = gameMarks[i];
+        // Must keep this function compatible with handleClicks, where cell content is used to determine if the cell
+        //   has already been used.
+        if (gameMarks[i] === '') {
+            document.getElementById('cell' + i).parentElement.innerHTML =
+                '<span id="cell' + i + '" class="gameLetter hidden">M</span>';
+        } else {
+            document.getElementById('cell' + i).parentElement.innerHTML =
+                '<span id="cell' + i + '" class="gameLetter">' + gameMarks[i] + '</span>';
+        }
     }
 }
 
@@ -154,7 +162,7 @@ function handleMark(cellNumber) {
     }
 
     cellID = 'cell' + cellNumber;
-    if(document.getElementById(cellID).innerHTML !== '') {
+    if(document.getElementById(cellID).innerHTML === 'X' || document.getElementById(cellID).innerHTML === 'O') {
         return;
     }
 
