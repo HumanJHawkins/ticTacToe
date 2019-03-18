@@ -120,7 +120,7 @@ function updateMarks() {
         //   has already been used.
         if (gameMarks[i] === '') {
             document.getElementById('cell' + i).parentElement.innerHTML =
-                '<span id="cell' + i + '" class="gameLetter hidden">M</span>';
+                '<span id="cell' + i + '" class="gameLetter hidden">-</span>';
         } else {
             document.getElementById('cell' + i).parentElement.innerHTML =
                 '<span id="cell' + i + '" class="gameLetter">' + gameMarks[i] + '</span>';
@@ -236,7 +236,7 @@ window.addEventListener("keydown", function (event) {
 
     if (theKey.length === 1) {
         if (theKey >= "1" && theKey <= "9") {
-            handleMark(theKey);
+            handleMark(theKey - 1); // Make cells 0-8 correspond to keypad 1-9
             handled = true;
         }
     } else if (theKey === 'ENTER' && event.shiftKey && event.ctrlKey) {
