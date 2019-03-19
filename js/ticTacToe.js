@@ -2,15 +2,22 @@
 let GAME_STATE = Object.freeze({
     "ERROR": 0,
     "INPROGRESS": 1,
-    "GAMEOVER": 2
+    "CATS": 2,
+    "WIN": 3
 });
 
-let PLAYER = Object.freeze({  // Allows playerTurn = -playerTurn for switching turns.
-    "PLAYER_X": -1,
-    "PLAYER_O": 1
+let CELL_STATE = Object.freeze({
+    "CATS": -10,    // Cannot contribute to a win
+    "PLAYER_X": -1, // Also used for player turn
+    "EMPTY": 0,
+    "PLAYER_O": 1,  // Also used for player turn
+    "WIN": 10
 });
 
-let gameMarks = ['','','','','','','','',''];
+
+let cellStates = [CELL_STATE.EMPTY,CELL_STATE.EMPTY,CELL_STATE.EMPTY,
+                    CELL_STATE.EMPTY,CELL_STATE.EMPTY,CELL_STATE.EMPTY,
+                    CELL_STATE.EMPTY,CELL_STATE.EMPTY,CELL_STATE.EMPTY];
 
 let gameState;
 let gameDifficulty;
@@ -33,7 +40,7 @@ newGame();
 
 // Function declarations
 function newGame() {
-    playerTurn = PLAYER.PLAYER_X;
+    playerTurn = CELL_STATE.PLAYER_X;
     setGameState(GAME_STATE.INPROGRESS);
     handleDisplaySize();        // Handles full screen draw.
     handleDisplayRefresh();
@@ -115,17 +122,65 @@ function handleDisplayRefresh() {
 }
 
 function updateMarks() {
-    for(let i = 0; i < gameMarks.length; i++) {
-        // Must keep this function compatible with handleClicks, where cell content is used to determine if the cell
-        //   has already been used.
-        if (gameMarks[i] === '') {
-            document.getElementById('cell' + i).parentElement.innerHTML =
-                '<span id="cell' + i + '" class="gameLetter hidden">-</span>';
-        } else {
-            document.getElementById('cell' + i).parentElement.innerHTML =
-                '<span id="cell' + i + '" class="gameLetter">' + gameMarks[i] + '</span>';
+    if(gameState = GAME_STATE.INPROGRESS) {
+        for (let i = 0; i < cellStates.length; i++) {
+            if (cellStates[i] === CELL_STATE.EMPTY) {
+                document.getElementById('cell' + i).parentElement.innerHTML =
+                    '<span id="cell' + i + '" class="gameLetter hidden">-</span>';
+            } else if (cellStates[i] === CELL_STATE.PLAYER_X) {
+                document.getElementById('cell' + i).parentElement.innerHTML =
+                    '<span id="cell' + i + '" class="gameLetter">X</span>';
+            } else if (cellStates[i] === CELL_STATE.PLAYER_O) {
+                document.getElementById('cell' + i).parentElement.innerHTML =
+                    '<span id="cell' + i + '" class="gameLetter">O</span>';
+            } else if (cellStates[i] === CELL_STATE.CATS) {
+                document.getElementById('cell' + i).parentElement.innerHTML =
+                    '<span id="cell' + i + '" class="gameLetter">:</span>';
+            } else if (cellStates[i] === CELL_STATE.WIN) {
+                document.getElementById('cell' + i).parentElement.innerHTML =
+                    '<span id="cell' + i + '" class="gameLetter gameWin">:</span>';
+            }
         }
     }
+    // else if(gameState = GAME_STATE.WIN) {
+    //     for (let i = 0; i < cellStates.length; i++) {
+    //         if (cellStates[i] === CELL_STATE.EMPTY) {
+    //             document.getElementById('cell' + i).parentElement.innerHTML =
+    //                 '<span id="cell' + i + '" class="gameLetter hidden">-</span>';
+    //         } else if (cellStates[i] === CELL_STATE.PLAYER_X) {
+    //             document.getElementById('cell' + i).parentElement.innerHTML =
+    //                 '<span id="cell' + i + '" class="gameLetter">X</span>';
+    //         } else if (cellStates[i] === CELL_STATE.PLAYER_O) {
+    //             document.getElementById('cell' + i).parentElement.innerHTML =
+    //                 '<span id="cell' + i + '" class="gameLetter">O</span>';
+    //         } else if (cellStates[i] === CELL_STATE.CATS) {
+    //             document.getElementById('cell' + i).parentElement.innerHTML =
+    //                 '<span id="cell' + i + '" class="gameLetter">:</span>';
+    //         } else if (cellStates[i] === CELL_STATE.WIN) {
+    //             document.getElementById('cell' + i).parentElement.innerHTML =
+    //                 '<span id="cell' + i + '" class="gameLetter gameWin">:</span>';
+    //         }
+    //     }
+    // } else if(gameState = GAME_STATE.CATS) {
+    //     for (let i = 0; i < cellStates.length; i++) {
+    //         if (cellStates[i] === CELL_STATE.EMPTY) {
+    //             document.getElementById('cell' + i).parentElement.innerHTML =
+    //                 '<span id="cell' + i + '" class="gameLetter hidden">-</span>';
+    //         } else if (cellStates[i] === CELL_STATE.PLAYER_X) {
+    //             document.getElementById('cell' + i).parentElement.innerHTML =
+    //                 '<span id="cell' + i + '" class="gameLetter">X</span>';
+    //         } else if (cellStates[i] === CELL_STATE.PLAYER_O) {
+    //             document.getElementById('cell' + i).parentElement.innerHTML =
+    //                 '<span id="cell' + i + '" class="gameLetter">O</span>';
+    //         } else if (cellStates[i] === CELL_STATE.CATS) {
+    //             document.getElementById('cell' + i).parentElement.innerHTML =
+    //                 '<span id="cell' + i + '" class="gameLetter">:</span>';
+    //         } else if (cellStates[i] === CELL_STATE.WIN) {
+    //             document.getElementById('cell' + i).parentElement.innerHTML =
+    //                 '<span id="cell' + i + '" class="gameLetter gameWin">:</span>';
+    //         }
+    //     }
+
 }
 
 function showPreferences() {
@@ -150,35 +205,159 @@ function updateEnabledState() {
     document.getElementById("gameDifficulty").disabled = false;
 }
 
-function randIntBetween(randMin, randMax) {
-    return Math.floor(Math.random() * (randMax - randMin + 1) + randMin);
-}
-
 function handleMark(cellNumber) {
-    // Ignore marks when game over, etc.
-    if (gameState === GAME_STATE.ERROR ||
-        gameState === GAME_STATE.GAMEOVER) {
+    // Ignore marks when game over or the cell is already marked, etc.
+    if (gameState !== GAME_STATE.INPROGRESS ||
+        cellStates[cellNumber] === CELL_STATE.PLAYER_X ||
+        cellStates[cellNumber] === CELL_STATE.PLAYER_O) {
+        alert('cellStates[' + i + ']: ' + cellStates[cellNumber]);
+        alert('gameState: ' + gameState);
         return;
     }
 
-    cellID = 'cell' + cellNumber;
-    if(document.getElementById(cellID).innerHTML === 'X' || document.getElementById(cellID).innerHTML === 'O') {
-        return;
-    }
+    cellStates[cellNumber] = playerTurn;    // Player turn is tracked by giving the player an appropriate CELL_STATE.
 
-    let theMark = 'X';
-    if(playerTurn === PLAYER.PLAYER_O) {
-        theMark = 'O';
-    }
+    if(!updateWinStates()) { playerTurn = -playerTurn; }
 
-    gameMarks[cellNumber] = theMark;
-
-    playerTurn = -playerTurn;
-    // setGameState(); // Each guess can change the game state.
-
+    updateCatsStates();
     handleDisplayRefresh();
 }
 
+function updateWinStates() {
+    // Marked cellStates are either 1 or -1, and no CELL_STATE is 2 or 3. So, if the absolute value of the sum of any
+    //   row is 3, it is a winning row.
+    if(Math.abs(cellStates[0] + cellStates[1] + cellStates[2]) === 3) {
+        cellStates[0] = cellStates[1] = cellStates[2] = CELL_STATE.WIN;
+    }
+
+    if(Math.abs(cellStates[0] + cellStates[3] + cellStates[6]) === 3) {
+        cellStates[0] = cellStates[3] = cellStates[6] = CELL_STATE.WIN;
+    }
+
+    if(Math.abs(cellStates[0] + cellStates[4] + cellStates[8]) === 3) {
+        cellStates[0] = cellStates[4] = cellStates[8] = CELL_STATE.WIN;
+    }
+
+    if(Math.abs(cellStates[1] + cellStates[4] + cellStates[7]) === 3) {
+        cellStates[1] = cellStates[4] = cellStates[7] = CELL_STATE.WIN;
+    }
+
+    if(Math.abs(cellStates[2] + cellStates[4] + cellStates[6]) === 3) {
+        cellStates[2] = cellStates[4] = cellStates[6] = CELL_STATE.WIN;
+    }
+
+    if(Math.abs(cellStates[2] + cellStates[5] + cellStates[8]) === 3) {
+        cellStates[2] = cellStates[5] = cellStates[8] = CELL_STATE.WIN;
+    }
+
+    if(Math.abs(cellStates[3] + cellStates[4] + cellStates[5]) === 3) {
+        cellStates[3] = cellStates[4] = cellStates[5] = CELL_STATE.WIN;
+    }
+
+    if(Math.abs(cellStates[6] + cellStates[7] + cellStates[8]) === 3) {
+        cellStates[6] = cellStates[7] = cellStates[8] = CELL_STATE.WIN;
+    }
+
+    if(cellStates.find(function(el) { return el===CELL_STATE.WIN; }) === CELL_STATE.WIN) {
+        updateGameState(GAME_STATE.WIN);
+        return true;
+    } else {
+        return false;
+    }
+}
+
+function updateCatsStates() {
+    // If the game is won, all empty cells become equivalent to CATS cells (not potentially winning).
+    if(cellStates.find(function(el) { return el===CELL_STATE.WIN; }) === CELL_STATE.WIN) {
+        for(let i = 0; i < cellStates.length; i++) {
+            if(cellStates[i] === CELL_STATE.EMPTY) {
+                cellStates[i] = CELL_STATE.CATS
+            }
+        }
+    }
+
+    // It is impossible for two cells on a winnable line to both be "CATS" cells, or for "CATS" to exist with an empty
+    //   cell. So only empty cells need to be tested, and only need to look for nearby empty cells to determins "CATS".
+    if(cellStates[0] === CELL_STATE.EMPTY &&
+        ((cellStates[1] !== CELL_STATE.EMPTY || cellStates[2] !== CELL_STATE.EMPTY) && cellStates[1] + cellStates[2] === 0) &&
+        ((cellStates[3] !== CELL_STATE.EMPTY || cellStates[6] !== CELL_STATE.EMPTY) && cellStates[3] + cellStates[6] === 0) &&
+        ((cellStates[4] !== CELL_STATE.EMPTY || cellStates[8] !== CELL_STATE.EMPTY) && cellStates[4] + cellStates[8] === 0)
+    ) {
+        cellStates[0] = CELL_STATE.CATS;
+    }
+
+    if(cellStates[1] === CELL_STATE.EMPTY &&
+        ((cellStates[0] !== CELL_STATE.EMPTY || cellStates[2] !== CELL_STATE.EMPTY) && cellStates[0] + cellStates[2] === 0) &&
+        ((cellStates[4] !== CELL_STATE.EMPTY || cellStates[7] !== CELL_STATE.EMPTY) && cellStates[4] + cellStates[7] === 0)
+    ) {
+        cellStates[1] = CELL_STATE.CATS;
+    }
+
+    if(cellStates[2] === CELL_STATE.EMPTY &&
+        ((cellStates[0] !== CELL_STATE.EMPTY || cellStates[1] !== CELL_STATE.EMPTY) && cellStates[0] + cellStates[1] === 0) &&
+        ((cellStates[5] !== CELL_STATE.EMPTY || cellStates[8] !== CELL_STATE.EMPTY) && cellStates[5] + cellStates[8] === 0) &&
+        ((cellStates[4] !== CELL_STATE.EMPTY || cellStates[6] !== CELL_STATE.EMPTY) && cellStates[4] + cellStates[6] === 0)
+    ) {
+        cellStates[2] = CELL_STATE.CATS;
+    }
+
+    if(cellStates[3] === CELL_STATE.EMPTY &&
+        ((cellStates[0] !== CELL_STATE.EMPTY || cellStates[6] !== CELL_STATE.EMPTY) && cellStates[0] + cellStates[6] === 0) &&
+        ((cellStates[4] !== CELL_STATE.EMPTY || cellStates[7] !== CELL_STATE.EMPTY) && cellStates[4] + cellStates[7] === 0)
+    ) {
+        cellStates[3] = CELL_STATE.CATS;
+    }
+
+    if(cellStates[4] === CELL_STATE.EMPTY &&
+        ((cellStates[0] !== CELL_STATE.EMPTY || cellStates[8] !== CELL_STATE.EMPTY) && cellStates[0] + cellStates[8] === 0) &&
+        ((cellStates[1] !== CELL_STATE.EMPTY || cellStates[7] !== CELL_STATE.EMPTY) && cellStates[1] + cellStates[7] === 0) &&
+        ((cellStates[2] !== CELL_STATE.EMPTY || cellStates[6] !== CELL_STATE.EMPTY) && cellStates[2] + cellStates[6] === 0) &&
+        ((cellStates[3] !== CELL_STATE.EMPTY || cellStates[5] !== CELL_STATE.EMPTY) && cellStates[3] + cellStates[5] === 0)
+    ) {
+        cellStates[4] = CELL_STATE.CATS;
+    }
+
+    if(cellStates[5] === CELL_STATE.EMPTY &&
+        ((cellStates[2] !== CELL_STATE.EMPTY || cellStates[8] !== CELL_STATE.EMPTY) && cellStates[2] + cellStates[8] === 0) &&
+        ((cellStates[3] !== CELL_STATE.EMPTY || cellStates[4] !== CELL_STATE.EMPTY) && cellStates[3] + cellStates[4] === 0)
+    ) {
+        cellStates[5] = CELL_STATE.CATS;
+    }
+
+    if(cellStates[6] === CELL_STATE.EMPTY &&
+        ((cellStates[0] !== CELL_STATE.EMPTY || cellStates[3] !== CELL_STATE.EMPTY) && cellStates[0] + cellStates[3] === 0) &&
+        ((cellStates[2] !== CELL_STATE.EMPTY || cellStates[4] !== CELL_STATE.EMPTY) && cellStates[2] + cellStates[4] === 0) &&
+        ((cellStates[7] !== CELL_STATE.EMPTY || cellStates[8] !== CELL_STATE.EMPTY) && cellStates[7] + cellStates[8] === 0)
+    ) {
+        cellStates[6] = CELL_STATE.CATS;
+    }
+
+    if(cellStates[7] === CELL_STATE.EMPTY &&
+        ((cellStates[1] !== CELL_STATE.EMPTY || cellStates[4] !== CELL_STATE.EMPTY) && cellStates[1] + cellStates[4] === 0) &&
+        ((cellStates[6] !== CELL_STATE.EMPTY || cellStates[8] !== CELL_STATE.EMPTY) && cellStates[6] + cellStates[8] === 0)
+    ) {
+        cellStates[7] = CELL_STATE.CATS;
+    }
+
+    if(cellStates[8] === CELL_STATE.EMPTY &&
+        ((cellStates[0] !== CELL_STATE.EMPTY || cellStates[4] !== CELL_STATE.EMPTY) && cellStates[0] + cellStates[4] === 0) &&
+        ((cellStates[2] !== CELL_STATE.EMPTY || cellStates[5] !== CELL_STATE.EMPTY) && cellStates[2] + cellStates[5] === 0) &&
+        ((cellStates[6] !== CELL_STATE.EMPTY || cellStates[7] !== CELL_STATE.EMPTY) && cellStates[6] + cellStates[7] === 0)
+    ) {
+        cellStates[8] = CELL_STATE.CATS;
+    }
+
+    if(cellStates.find(function (el) { return el === CELL_STATE.EMPTY; }) === CELL_STATE.EMPTY) {
+        return false;
+    } else {
+        updateGameState(GAME_STATE.CATS);
+        return true;
+    }
+}
+
+function updateGameState(newGameState) {
+    gameState = GAME_STATE.contains(newGameState) ? newGameState : GAME_STATE.ERROR;
+}
 
 function resetGame() {
     // If game is in progress, confirm reset.
@@ -271,9 +450,8 @@ window.onclick = function (event) {
 };
 
 function updateDifficulty() {
-    if (gameState === GAME_STATE.PROGRESSING || gameState === GAME_STATE.IMPERILED) {
-        if (confirm("Apply this difficulty change to the current game?\n\nClick 'Cancel' to finish this game " +
-            "first. Your changes will apply to the next game.")) {
+    if (gameState === GAME_STATE.INPROGRESS) {
+        if (confirm("Apply this difficulty change to the current game?")) {
             // Dismiss the preferences dialog.
             dialogPreferences.style.display = "none";
             gameDifficulty = parseInt(document.getElementById('gameDifficulty').value);
@@ -289,5 +467,9 @@ function updateDifficulty() {
 }
 
 
+// We'll probably need this later...
+function randIntBetween(randMin, randMax) {
+    return Math.floor(Math.random() * (randMax - randMin + 1) + randMin);
+}
 
 
