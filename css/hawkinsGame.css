@@ -47,6 +47,10 @@ td {
     background-color: #A82E5D;
 }
 
+.gameTie {
+    background-color: #5EBFB6;
+}
+
 .hangmanWord {
     font-family: "Courier New", "Courier", monospaced, serif;
     letter-spacing: .5vw;
@@ -208,9 +212,12 @@ grid-container {
 
 grid-item {
     display: flex;
+    background-color: #759B67;
 }
 
-span, img {
+
+
+div, img {
     margin: auto;
 }
 

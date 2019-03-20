@@ -3,7 +3,7 @@ let GAME_STATE = Object.freeze({
     "ERROR": 0,
     "INPROGRESS": 1,
     "CATS": 2,
-    "WIN": 3
+    "WIN": 10
 });
 
 let CELL_STATE = Object.freeze({
@@ -11,7 +11,8 @@ let CELL_STATE = Object.freeze({
     "PLAYER_X": -1, // Also used for player turn
     "EMPTY": 0,
     "PLAYER_O": 1,  // Also used for player turn
-    "WIN": 10
+    "WIN_X": 9,     // GAME_STATE.WIN + CELL_STATE.PLAYER_X
+    "WIN_O": 11     // GAME_STATE.WIN + CELL_STATE.PLAYER_O
 });
 
 
@@ -22,6 +23,7 @@ let cellStates = [CELL_STATE.EMPTY,CELL_STATE.EMPTY,CELL_STATE.EMPTY,
 let gameState;
 let gameDifficulty;
 let playerTurn;
+let emptyCells;
 
 let windowHeight;
 let windowWidth;
@@ -40,12 +42,27 @@ newGame();
 
 // Function declarations
 function newGame() {
+    emptyCells = 9;
     playerTurn = CELL_STATE.PLAYER_X;
     setGameState(GAME_STATE.INPROGRESS);
     handleDisplaySize();        // Handles full screen draw.
     handleDisplayRefresh();
     updateEnabledState();       // Requires preference controls created in handleDisplaySize().
+
+    logOut('newGame playerTurn', playerTurn);
+    logOut('newGame gameState', gameState);
+    logOut('newGame windowWidth', windowWidth);
+    logOut('newGame windowHeight', windowHeight);
 }
+
+function logOut(desc = '', data = '') {
+    let seperator = ': ';
+    if(desc === '' || data === '') {
+        seperator = '';
+    }
+    console.log(desc + seperator + data)
+}
+
 
 function handleDisplaySize() {
     // Window dimensions in pixels. Although we use view width for almost everything, most decisions about layout are
@@ -63,6 +80,7 @@ function handleDisplayRefresh() {
     let pageHTML;
     if (windowHeight > windowWidth) {
         // Tall Layout
+        logOut('Using tall layout.');
         updateStylesheet("#divGameboard", "float", "none");
         updateStylesheet("#divGameboard", "margin-right", "0vw");
         pageHTML =
@@ -78,6 +96,7 @@ function handleDisplayRefresh() {
             '</h1><div id="divGameboard"></div>';
     } else {
         // Wide Layout
+        logOut('Using wide layout.');
         updateStylesheet("#divGameboard", "float", "left");
         updateStylesheet("#divGameboard", "margin-right", "2vw");
         pageHTML = '<div id="divGameboard"></div>' +
@@ -107,80 +126,87 @@ function handleDisplayRefresh() {
 
     document.getElementById('divGameboard').innerHTML =
         '<grid-container>\n' +
-        '    <grid-item onclick="handleMark(0)" class="top left"><span id="cell0" class="gameLetter"></span></grid-item>\n' +
-        '    <grid-item onclick="handleMark(1)" class="top"><span id="cell1" class="gameLetter"></span></grid-item>\n' +
-        '    <grid-item onclick="handleMark(2)" class="top right"><span id="cell2" class="gameLetter"></span></grid-item>\n' +
-        '    <grid-item onclick="handleMark(3)" class="left"><span id="cell3" class="gameLetter"></span></grid-item>\n' +
-        '    <grid-item onclick="handleMark(4)" ><span id="cell4" class="gameLetter"></span></grid-item>\n' +
-        '    <grid-item onclick="handleMark(5)" class="right"><span id="cell5" class="gameLetter"></span></grid-item>\n' +
-        '    <grid-item onclick="handleMark(6)" class="bottom left"><span id="cell6" class="gameLetter"></span></grid-item>\n' +
-        '    <grid-item onclick="handleMark(7)" class="bottom"><span id="cell7" class="gameLetter"></span></grid-item>\n' +
-        '    <grid-item onclick="handleMark(8)" class="bottom right"><span id="cell8" class="gameLetter"></span></grid-item>\n' +
+        '    <grid-item onclick="handleMark(0)" class="top left" id="cell0"></grid-item>\n' +
+        '    <grid-item onclick="handleMark(1)" class="top" id="cell1"></grid-item>\n' +
+        '    <grid-item onclick="handleMark(2)" class="top right" id="cell2"></grid-item>\n' +
+        '    <grid-item onclick="handleMark(3)" class="left" id="cell3"></grid-item>\n' +
+        '    <grid-item onclick="handleMark(4)" id="cell4"><div></div></grid-item>\n' +
+        '    <grid-item onclick="handleMark(5)" class="right" id="cell5"></grid-item>\n' +
+        '    <grid-item onclick="handleMark(6)" class="bottom left" id="cell6"></grid-item>\n' +
+        '    <grid-item onclick="handleMark(7)" class="bottom" id="cell7"></grid-item>\n' +
+        '    <grid-item onclick="handleMark(8)" class="bottom right" id="cell8"></grid-item>\n' +
         '</grid-container>';
 
     updateMarks();
 }
 
 function updateMarks() {
-    if(gameState = GAME_STATE.INPROGRESS) {
+    logOut('updateMarks gameState', gameState);
+    for (let i = 0; i < cellStates.length; i++) {
+        logOut('updateMarks cellStates[' + i + ']', cellStates[i]);
+    }
+
+    if(gameState === GAME_STATE.INPROGRESS) {
         for (let i = 0; i < cellStates.length; i++) {
             if (cellStates[i] === CELL_STATE.EMPTY) {
-                document.getElementById('cell' + i).parentElement.innerHTML =
-                    '<span id="cell' + i + '" class="gameLetter hidden">-</span>';
+                document.getElementById('cell' + i).innerHTML =
+                    '<div id="cell' + i + '" class="gameLetter hidden">-</div>';
             } else if (cellStates[i] === CELL_STATE.PLAYER_X) {
-                document.getElementById('cell' + i).parentElement.innerHTML =
-                    '<span id="cell' + i + '" class="gameLetter">X</span>';
+                document.getElementById('cell' + i).innerHTML =
+                    '<div id="cell' + i + '" class="gameLetter">X</div>';
             } else if (cellStates[i] === CELL_STATE.PLAYER_O) {
-                document.getElementById('cell' + i).parentElement.innerHTML =
-                    '<span id="cell' + i + '" class="gameLetter">O</span>';
+                document.getElementById('cell' + i).innerHTML =
+                    '<div id="cell' + i + '" class="gameLetter">O</div>';
             } else if (cellStates[i] === CELL_STATE.CATS) {
-                document.getElementById('cell' + i).parentElement.innerHTML =
-                    '<span id="cell' + i + '" class="gameLetter">:</span>';
-            } else if (cellStates[i] === CELL_STATE.WIN) {
-                document.getElementById('cell' + i).parentElement.innerHTML =
-                    '<span id="cell' + i + '" class="gameLetter gameWin">:</span>';
+                document.getElementById('cell' + i).innerHTML =
+                    '<div id="cell' + i + '" class="gameLetter">:</div>';
             }
         }
     }
-    // else if(gameState = GAME_STATE.WIN) {
-    //     for (let i = 0; i < cellStates.length; i++) {
-    //         if (cellStates[i] === CELL_STATE.EMPTY) {
-    //             document.getElementById('cell' + i).parentElement.innerHTML =
-    //                 '<span id="cell' + i + '" class="gameLetter hidden">-</span>';
-    //         } else if (cellStates[i] === CELL_STATE.PLAYER_X) {
-    //             document.getElementById('cell' + i).parentElement.innerHTML =
-    //                 '<span id="cell' + i + '" class="gameLetter">X</span>';
-    //         } else if (cellStates[i] === CELL_STATE.PLAYER_O) {
-    //             document.getElementById('cell' + i).parentElement.innerHTML =
-    //                 '<span id="cell' + i + '" class="gameLetter">O</span>';
-    //         } else if (cellStates[i] === CELL_STATE.CATS) {
-    //             document.getElementById('cell' + i).parentElement.innerHTML =
-    //                 '<span id="cell' + i + '" class="gameLetter">:</span>';
-    //         } else if (cellStates[i] === CELL_STATE.WIN) {
-    //             document.getElementById('cell' + i).parentElement.innerHTML =
-    //                 '<span id="cell' + i + '" class="gameLetter gameWin">:</span>';
-    //         }
-    //     }
-    // } else if(gameState = GAME_STATE.CATS) {
-    //     for (let i = 0; i < cellStates.length; i++) {
-    //         if (cellStates[i] === CELL_STATE.EMPTY) {
-    //             document.getElementById('cell' + i).parentElement.innerHTML =
-    //                 '<span id="cell' + i + '" class="gameLetter hidden">-</span>';
-    //         } else if (cellStates[i] === CELL_STATE.PLAYER_X) {
-    //             document.getElementById('cell' + i).parentElement.innerHTML =
-    //                 '<span id="cell' + i + '" class="gameLetter">X</span>';
-    //         } else if (cellStates[i] === CELL_STATE.PLAYER_O) {
-    //             document.getElementById('cell' + i).parentElement.innerHTML =
-    //                 '<span id="cell' + i + '" class="gameLetter">O</span>';
-    //         } else if (cellStates[i] === CELL_STATE.CATS) {
-    //             document.getElementById('cell' + i).parentElement.innerHTML =
-    //                 '<span id="cell' + i + '" class="gameLetter">:</span>';
-    //         } else if (cellStates[i] === CELL_STATE.WIN) {
-    //             document.getElementById('cell' + i).parentElement.innerHTML =
-    //                 '<span id="cell' + i + '" class="gameLetter gameWin">:</span>';
-    //         }
-    //     }
-
+    else if(gameState === GAME_STATE.WIN) {
+        for (let i = 0; i < cellStates.length; i++) {
+            if (cellStates[i] === CELL_STATE.EMPTY) {
+                // There should be no case where a cell is empty at this point.
+                document.getElementById('cell' + i).innerHTML =
+                    '<div id="cell' + i + '" >Error<br />Empty</div>';
+            } else if (cellStates[i] === CELL_STATE.PLAYER_X) {
+                document.getElementById('cell' + i).innerHTML =
+                    '<div id="cell' + i + '" class="gameLetter">X</div>';
+            } else if (cellStates[i] === CELL_STATE.PLAYER_O) {
+                document.getElementById('cell' + i).innerHTML =
+                    '<div id="cell' + i + '" class="gameLetter">O</div>';
+            } else if (cellStates[i] === CELL_STATE.CATS) {
+                document.getElementById('cell' + i).innerHTML =
+                    '<div id="cell' + i + '" class="gameLetter">:</div>';
+            } else if (cellStates[i] === CELL_STATE.WIN_X) {
+                document.getElementById('cell' + i).innerHTML =
+                    '<div id="cell' + i + '" class="gameLetter gameWin">X</div>';
+            } else if (cellStates[i] === CELL_STATE.WIN_O) {
+                document.getElementById('cell' + i).innerHTML =
+                    '<div id="cell' + i + '" class="gameLetter gameWin">O</div>';
+            }
+        }
+    } else if(gameState === GAME_STATE.CATS) {
+        for (let i = 0; i < cellStates.length; i++) {
+            if (cellStates[i] === CELL_STATE.EMPTY) {
+                // There should be no case where a cell is empty at this point.
+                document.getElementById('cell' + i).innerHTML =
+                    '<div id="cell' + i + '" >Error<br />Empty</div>';
+            } else if (cellStates[i] === CELL_STATE.PLAYER_X) {
+                document.getElementById('cell' + i).innerHTML =
+                    '<div id="cell' + i + '" class="gameLetter">X</div>';
+            } else if (cellStates[i] === CELL_STATE.PLAYER_O) {
+                document.getElementById('cell' + i).innerHTML =
+                    '<div id="cell' + i + '" class="gameLetter">O</div>';
+            } else if (cellStates[i] === CELL_STATE.CATS) {
+                document.getElementById('cell' + i).innerHTML =
+                    '<div id="cell' + i + '" class="gameLetter gameTie">-</div>';
+            } else if (cellStates[i] === CELL_STATE.WIN) {
+                document.getElementById('cell' + i).innerHTML =
+                    '<div id="cell' + i + '" class="gameLetter gameWin">Error<br />Win</div>';
+            }
+        }
+    }
 }
 
 function showPreferences() {
@@ -206,16 +232,17 @@ function updateEnabledState() {
 }
 
 function handleMark(cellNumber) {
+    logOut('handleMark gameState', gameState);
+    logOut('handleMark cellStates[' + cellNumber + ']', cellStates[cellNumber]);
+
     // Ignore marks when game over or the cell is already marked, etc.
     if (gameState !== GAME_STATE.INPROGRESS ||
-        cellStates[cellNumber] === CELL_STATE.PLAYER_X ||
-        cellStates[cellNumber] === CELL_STATE.PLAYER_O) {
-        alert('cellStates[' + i + ']: ' + cellStates[cellNumber]);
-        alert('gameState: ' + gameState);
+        (cellStates[cellNumber] !== CELL_STATE.EMPTY && cellStates[cellNumber] !== CELL_STATE.CATS)) {
         return;
     }
 
     cellStates[cellNumber] = playerTurn;    // Player turn is tracked by giving the player an appropriate CELL_STATE.
+    emptyCells--;
 
     if(!updateWinStates()) { playerTurn = -playerTurn; }
 
@@ -226,39 +253,42 @@ function handleMark(cellNumber) {
 function updateWinStates() {
     // Marked cellStates are either 1 or -1, and no CELL_STATE is 2 or 3. So, if the absolute value of the sum of any
     //   row is 3, it is a winning row.
+    //
+    // playerTurn contains CELL_STATE for player. Adding GAME_STATE to this number results in CELL_STATE.WIN for
+    // appropriate player.
     if(Math.abs(cellStates[0] + cellStates[1] + cellStates[2]) === 3) {
-        cellStates[0] = cellStates[1] = cellStates[2] = CELL_STATE.WIN;
+        cellStates[0] = cellStates[1] = cellStates[2] = playerTurn + GAME_STATE.WIN;
     }
 
     if(Math.abs(cellStates[0] + cellStates[3] + cellStates[6]) === 3) {
-        cellStates[0] = cellStates[3] = cellStates[6] = CELL_STATE.WIN;
+        cellStates[0] = cellStates[3] = cellStates[6] = playerTurn + GAME_STATE.WIN;
     }
 
     if(Math.abs(cellStates[0] + cellStates[4] + cellStates[8]) === 3) {
-        cellStates[0] = cellStates[4] = cellStates[8] = CELL_STATE.WIN;
+        cellStates[0] = cellStates[4] = cellStates[8] = playerTurn + GAME_STATE.WIN;
     }
 
     if(Math.abs(cellStates[1] + cellStates[4] + cellStates[7]) === 3) {
-        cellStates[1] = cellStates[4] = cellStates[7] = CELL_STATE.WIN;
+        cellStates[1] = cellStates[4] = cellStates[7] = playerTurn + GAME_STATE.WIN;
     }
 
     if(Math.abs(cellStates[2] + cellStates[4] + cellStates[6]) === 3) {
-        cellStates[2] = cellStates[4] = cellStates[6] = CELL_STATE.WIN;
+        cellStates[2] = cellStates[4] = cellStates[6] = playerTurn + GAME_STATE.WIN;
     }
 
     if(Math.abs(cellStates[2] + cellStates[5] + cellStates[8]) === 3) {
-        cellStates[2] = cellStates[5] = cellStates[8] = CELL_STATE.WIN;
+        cellStates[2] = cellStates[5] = cellStates[8] = playerTurn + GAME_STATE.WIN;
     }
 
     if(Math.abs(cellStates[3] + cellStates[4] + cellStates[5]) === 3) {
-        cellStates[3] = cellStates[4] = cellStates[5] = CELL_STATE.WIN;
+        cellStates[3] = cellStates[4] = cellStates[5] = playerTurn + GAME_STATE.WIN;
     }
 
     if(Math.abs(cellStates[6] + cellStates[7] + cellStates[8]) === 3) {
-        cellStates[6] = cellStates[7] = cellStates[8] = CELL_STATE.WIN;
+        cellStates[6] = cellStates[7] = cellStates[8] = playerTurn + GAME_STATE.WIN;
     }
 
-    if(cellStates.find(function(el) { return el===CELL_STATE.WIN; }) === CELL_STATE.WIN) {
+    if(cellStates.find(function(el) { return el >= CELL_STATE.WIN_X; }) >= CELL_STATE.WIN_X) {
         updateGameState(GAME_STATE.WIN);
         return true;
     } else {
@@ -268,7 +298,7 @@ function updateWinStates() {
 
 function updateCatsStates() {
     // If the game is won, all empty cells become equivalent to CATS cells (not potentially winning).
-    if(cellStates.find(function(el) { return el===CELL_STATE.WIN; }) === CELL_STATE.WIN) {
+    if(cellStates.find(function(el) { return el===CELL_STATE.WIN; }) !== undefined) {
         for(let i = 0; i < cellStates.length; i++) {
             if(cellStates[i] === CELL_STATE.EMPTY) {
                 cellStates[i] = CELL_STATE.CATS
@@ -276,73 +306,91 @@ function updateCatsStates() {
         }
     }
 
-    // It is impossible for two cells on a winnable line to both be "CATS" cells, or for "CATS" to exist with an empty
-    //   cell. So only empty cells need to be tested, and only need to look for nearby empty cells to determins "CATS".
+    // TO DO: Also handle the case where two cells are empty in a row, but due to player turn and limited moves, there
+    // is no case where the game can be won.
+
+    // For the purpose of this game, we'll define "CATS" CELL_STATUS to mean a cell that cannot be used to win the game.
+    // Therefore, a cell where all related rows contain one of each mark is a "CATS" cell, to be used to determine if
+    // this is a "CATS" game.
+    //
+    // NOTE: Due to CELL_STATE.PLAYER_X and CELL_STATE.PLAYER_O being 1 and -1, if either cell on the same row is not
+    // empty, and the sum of those two other cell states is not zero, then we know the row in question has one of each
+    // mark, therefore is a CATS cell.
+
+    // Cell 0 concerns (1,2) (3,6) (4,8)
     if(cellStates[0] === CELL_STATE.EMPTY &&
-        ((cellStates[1] !== CELL_STATE.EMPTY || cellStates[2] !== CELL_STATE.EMPTY) && cellStates[1] + cellStates[2] === 0) &&
-        ((cellStates[3] !== CELL_STATE.EMPTY || cellStates[6] !== CELL_STATE.EMPTY) && cellStates[3] + cellStates[6] === 0) &&
-        ((cellStates[4] !== CELL_STATE.EMPTY || cellStates[8] !== CELL_STATE.EMPTY) && cellStates[4] + cellStates[8] === 0)
+        (cellStates[1] !== CELL_STATE.EMPTY && cellStates[1] + cellStates[2] === 0) &&
+        (cellStates[3] !== CELL_STATE.EMPTY && cellStates[3] + cellStates[6] === 0) &&
+        (cellStates[4] !== CELL_STATE.EMPTY && cellStates[4] + cellStates[8] === 0)
     ) {
         cellStates[0] = CELL_STATE.CATS;
     }
 
+    // Cell 1 concerns (0,2) (4,7)
     if(cellStates[1] === CELL_STATE.EMPTY &&
-        ((cellStates[0] !== CELL_STATE.EMPTY || cellStates[2] !== CELL_STATE.EMPTY) && cellStates[0] + cellStates[2] === 0) &&
-        ((cellStates[4] !== CELL_STATE.EMPTY || cellStates[7] !== CELL_STATE.EMPTY) && cellStates[4] + cellStates[7] === 0)
+        (cellStates[0] !== CELL_STATE.EMPTY && cellStates[0] + cellStates[2] === 0) &&
+        (cellStates[4] !== CELL_STATE.EMPTY && cellStates[4] + cellStates[7] === 0)
     ) {
         cellStates[1] = CELL_STATE.CATS;
     }
 
+    // Cell 2 concerns (0,1) (5,8) (4,6)
     if(cellStates[2] === CELL_STATE.EMPTY &&
-        ((cellStates[0] !== CELL_STATE.EMPTY || cellStates[1] !== CELL_STATE.EMPTY) && cellStates[0] + cellStates[1] === 0) &&
-        ((cellStates[5] !== CELL_STATE.EMPTY || cellStates[8] !== CELL_STATE.EMPTY) && cellStates[5] + cellStates[8] === 0) &&
-        ((cellStates[4] !== CELL_STATE.EMPTY || cellStates[6] !== CELL_STATE.EMPTY) && cellStates[4] + cellStates[6] === 0)
+        (cellStates[0] !== CELL_STATE.EMPTY && cellStates[0] + cellStates[1] === 0) &&
+        (cellStates[5] !== CELL_STATE.EMPTY && cellStates[5] + cellStates[8] === 0) &&
+        (cellStates[4] !== CELL_STATE.EMPTY && cellStates[4] + cellStates[6] === 0)
     ) {
         cellStates[2] = CELL_STATE.CATS;
     }
 
+    // Cell 3 concerns (0,6) (4,7)
     if(cellStates[3] === CELL_STATE.EMPTY &&
-        ((cellStates[0] !== CELL_STATE.EMPTY || cellStates[6] !== CELL_STATE.EMPTY) && cellStates[0] + cellStates[6] === 0) &&
-        ((cellStates[4] !== CELL_STATE.EMPTY || cellStates[7] !== CELL_STATE.EMPTY) && cellStates[4] + cellStates[7] === 0)
+        (cellStates[0] !== CELL_STATE.EMPTY && cellStates[0] + cellStates[6] === 0) &&
+        (cellStates[4] !== CELL_STATE.EMPTY && cellStates[4] + cellStates[7] === 0)
     ) {
         cellStates[3] = CELL_STATE.CATS;
     }
 
+    // Cell 4 concerns (0,8) (1,7) (2,6) (3,5)
     if(cellStates[4] === CELL_STATE.EMPTY &&
-        ((cellStates[0] !== CELL_STATE.EMPTY || cellStates[8] !== CELL_STATE.EMPTY) && cellStates[0] + cellStates[8] === 0) &&
-        ((cellStates[1] !== CELL_STATE.EMPTY || cellStates[7] !== CELL_STATE.EMPTY) && cellStates[1] + cellStates[7] === 0) &&
-        ((cellStates[2] !== CELL_STATE.EMPTY || cellStates[6] !== CELL_STATE.EMPTY) && cellStates[2] + cellStates[6] === 0) &&
-        ((cellStates[3] !== CELL_STATE.EMPTY || cellStates[5] !== CELL_STATE.EMPTY) && cellStates[3] + cellStates[5] === 0)
+        (cellStates[0] !== CELL_STATE.EMPTY && cellStates[0] + cellStates[8] === 0) &&
+        (cellStates[1] !== CELL_STATE.EMPTY && cellStates[1] + cellStates[7] === 0) &&
+        (cellStates[2] !== CELL_STATE.EMPTY && cellStates[2] + cellStates[6] === 0) &&
+        (cellStates[3] !== CELL_STATE.EMPTY && cellStates[3] + cellStates[5] === 0)
     ) {
         cellStates[4] = CELL_STATE.CATS;
     }
 
+    // Cell 5 concerns (2,8) (3,4)
     if(cellStates[5] === CELL_STATE.EMPTY &&
-        ((cellStates[2] !== CELL_STATE.EMPTY || cellStates[8] !== CELL_STATE.EMPTY) && cellStates[2] + cellStates[8] === 0) &&
-        ((cellStates[3] !== CELL_STATE.EMPTY || cellStates[4] !== CELL_STATE.EMPTY) && cellStates[3] + cellStates[4] === 0)
+        (cellStates[2] !== CELL_STATE.EMPTY && cellStates[2] + cellStates[8] === 0) &&
+        (cellStates[3] !== CELL_STATE.EMPTY && cellStates[3] + cellStates[4] === 0)
     ) {
         cellStates[5] = CELL_STATE.CATS;
     }
 
+    // Cell 6 concerns (0,3) (2,4) (7,8)
     if(cellStates[6] === CELL_STATE.EMPTY &&
-        ((cellStates[0] !== CELL_STATE.EMPTY || cellStates[3] !== CELL_STATE.EMPTY) && cellStates[0] + cellStates[3] === 0) &&
-        ((cellStates[2] !== CELL_STATE.EMPTY || cellStates[4] !== CELL_STATE.EMPTY) && cellStates[2] + cellStates[4] === 0) &&
-        ((cellStates[7] !== CELL_STATE.EMPTY || cellStates[8] !== CELL_STATE.EMPTY) && cellStates[7] + cellStates[8] === 0)
+        (cellStates[0] !== CELL_STATE.EMPTY && cellStates[0] + cellStates[3] === 0) &&
+        (cellStates[2] !== CELL_STATE.EMPTY && cellStates[2] + cellStates[4] === 0) &&
+        (cellStates[7] !== CELL_STATE.EMPTY && cellStates[7] + cellStates[8] === 0)
     ) {
         cellStates[6] = CELL_STATE.CATS;
     }
 
+    // Cell 7 concerns (1,4) (6,8)
     if(cellStates[7] === CELL_STATE.EMPTY &&
-        ((cellStates[1] !== CELL_STATE.EMPTY || cellStates[4] !== CELL_STATE.EMPTY) && cellStates[1] + cellStates[4] === 0) &&
-        ((cellStates[6] !== CELL_STATE.EMPTY || cellStates[8] !== CELL_STATE.EMPTY) && cellStates[6] + cellStates[8] === 0)
+        (cellStates[1] !== CELL_STATE.EMPTY && cellStates[1] + cellStates[4] === 0) &&
+        (cellStates[6] !== CELL_STATE.EMPTY && cellStates[6] + cellStates[8] === 0)
     ) {
         cellStates[7] = CELL_STATE.CATS;
     }
 
+    // Cell 8 concerns (0,4) (2,5) (6,7)
     if(cellStates[8] === CELL_STATE.EMPTY &&
-        ((cellStates[0] !== CELL_STATE.EMPTY || cellStates[4] !== CELL_STATE.EMPTY) && cellStates[0] + cellStates[4] === 0) &&
-        ((cellStates[2] !== CELL_STATE.EMPTY || cellStates[5] !== CELL_STATE.EMPTY) && cellStates[2] + cellStates[5] === 0) &&
-        ((cellStates[6] !== CELL_STATE.EMPTY || cellStates[7] !== CELL_STATE.EMPTY) && cellStates[6] + cellStates[7] === 0)
+        (cellStates[0] !== CELL_STATE.EMPTY && cellStates[0] + cellStates[4] === 0) &&
+        (cellStates[2] !== CELL_STATE.EMPTY && cellStates[2] + cellStates[5] === 0) &&
+        (cellStates[6] !== CELL_STATE.EMPTY && cellStates[6] + cellStates[7] === 0)
     ) {
         cellStates[8] = CELL_STATE.CATS;
     }
@@ -356,7 +404,9 @@ function updateCatsStates() {
 }
 
 function updateGameState(newGameState) {
-    gameState = GAME_STATE.contains(newGameState) ? newGameState : GAME_STATE.ERROR;
+    // TO DO: Add check that the GAME_STATE input is valid.
+    //  gameState = GAME_STATE.contains(newGameState) ? newGameState : GAME_STATE.ERROR;
+    gameState = newGameState;
 }
 
 function resetGame() {
@@ -399,19 +449,20 @@ window.addEventListener("keydown", function (event) {
     if (event.key !== undefined) {
         // Use "key' if available as this is most standard.
         theKey = event.key.toUpperCase();
-    } else if (event.keyCode !== undefined) {
-        // Where 'key' is unsupported, the deprecated 'keyCode' will usually work.
-        alert('Key Code: ' + event.keyCode);
-        if (event.keyCode === 13) {
-            theKey = 'ENTER';
-        } else {
-            theKey = String.fromCharCode(event.keyCode);
-        }
-    } else {
-        // In theory, implementing handling by event.keyIdentifier could be required in some
-        //  environments. But there is no evidence that this is needed, and no environment
-        //  to test it has been identified.
     }
+    // else if (event.keyCode !== undefined) {
+    //     // Where 'key' is unsupported, the deprecated 'keyCode' will usually work.
+    //     alert('Key Code: ' + event.keyCode);
+    //     if (event.keyCode === 13) {
+    //         theKey = 'ENTER';
+    //     } else {
+    //         theKey = String.fromCharCode(event.keyCode);
+    //     }
+    // } else {
+    //     // In theory, implementing handling by event.keyIdentifier could be required in some
+    //     //  environments. But there is no evidence that this is needed, and no environment
+    //     //  to test it has been identified.
+    // }
 
     if (theKey.length === 1) {
         if (theKey >= "1" && theKey <= "9") {
