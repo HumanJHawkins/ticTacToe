@@ -41,6 +41,7 @@ td {
 
 .gameLetter {
     font-size: 12vw;
+    background-color: rebeccapurple;
 }
 
 .gameWin {
@@ -217,7 +218,7 @@ grid-item {
 
 
 
-div, img {
+img {
     margin: auto;
 }
 
