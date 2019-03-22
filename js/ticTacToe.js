@@ -85,9 +85,10 @@ function handleDisplayRefresh() {
         // Tall Layout
         logOut('Using tall layout.');
 
-        updateStylesheet(".grid-container", "float", "none");
-        updateStylesheet(".grid-container", "width", "80vw");
-        updateStylesheet(".grid-container", "height", "80vw");
+        updateStylesheet("grid-container", "float", "none");
+        updateStylesheet("grid-container", "width", "80vw");
+        updateStylesheet("grid-container", "height", "80vw");
+        updateStylesheet("grid-container", "margin", "10vw 10vw");
         pageHTML =
             '<h1>Tic-Tac-Toe' +
             '<img src="image/blank.png" alt="" class="iconButtonSpacer"/>' +
@@ -102,9 +103,10 @@ function handleDisplayRefresh() {
     } else {
         // Wide Layout
         logOut('Using wide layout.');
-        updateStylesheet(".grid-container", "float", "left");
-        updateStylesheet(".grid-container", "width", "80vh");
-        updateStylesheet(".grid-container", "height", "80vh");
+        updateStylesheet("grid-container", "float", "left");
+        updateStylesheet("grid-container", "width", "80vh");
+        updateStylesheet("grid-container", "height", "80vh");
+        updateStylesheet("grid-container", "margin", "5vh default 15vh 5vh");
         pageHTML = '<grid-container id="gridGameboard"></grid-container>' +
             '<h1>Tic-Tac-Toe' +
             '<img src="image/blank.png" alt="" class="iconButtonSpacer"/>' +
