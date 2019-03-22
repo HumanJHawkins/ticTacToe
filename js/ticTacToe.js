@@ -27,7 +27,6 @@ let cellStates = [CELL_STATE.EMPTY, CELL_STATE.EMPTY, CELL_STATE.EMPTY,
 let gameState;
 let gameDifficulty;
 let playerTurn;
-let emptyCells;
 
 let windowHeight;
 let windowWidth;
@@ -46,7 +45,6 @@ newGame();
 
 // Function declarations
 function newGame() {
-    emptyCells = 9;
     playerTurn = CELL_STATE.PLAYER_X;
     setGameState(GAME_STATE.INPROGRESS);
     handleDisplaySize();        // Handles full screen draw.
@@ -87,8 +85,9 @@ function handleDisplayRefresh() {
         // Tall Layout
         logOut('Using tall layout.');
 
-        updateStylesheet("#divGameboard", "float", "none");
-        updateStylesheet("#divGameboard", "margin-right", "0vw");
+        updateStylesheet(".grid-container", "float", "none");
+        updateStylesheet(".grid-container", "width", "80vw");
+        updateStylesheet(".grid-container", "height", "80vw");
         pageHTML =
             '<h1>Tic-Tac-Toe' +
             '<img src="image/blank.png" alt="" class="iconButtonSpacer"/>' +
@@ -99,13 +98,14 @@ function handleDisplayRefresh() {
             '<img src="image/about.png" alt="About" onClick="showAbout()" class="iconButtonImage"/>' +
             '<img src="image/blank.png" alt="" class="iconButtonSpacer"/>' +
             '<img src="image/newGame.png" alt="New Game" onClick="resetGame()" class="iconButtonImage"/>' +
-            '</h1><div id="divGameboard"></div>';
+            '</h1><grid-container id="gridGameboard"></grid-container>';
     } else {
         // Wide Layout
         logOut('Using wide layout.');
-        updateStylesheet("#divGameboard", "float", "left");
-        updateStylesheet("#divGameboard", "margin-right", "2vw");
-        pageHTML = '<div id="divGameboard"></div>' +
+        updateStylesheet(".grid-container", "float", "left");
+        updateStylesheet(".grid-container", "width", "80vh");
+        updateStylesheet(".grid-container", "height", "80vh");
+        pageHTML = '<grid-container id="gridGameboard"></grid-container>' +
             '<h1>Tic-Tac-Toe' +
             '<img src="image/blank.png" alt="" class="iconButtonSpacer"/>' +
             '<img src="image/blank.png" alt="" class="iconButtonSpacer"/>' +
@@ -131,17 +131,11 @@ function handleDisplayRefresh() {
     buttonCloseAbout = document.getElementById("btnCloseAbout");
 
     updateGameboard();
-    console.log(document.getElementById('divGameboard').innerHTML);
-
 }
 
 function updateGameboard() {
-    logOut('updateGameboard gameState', gameState);
-    for (let i = 0; i < cellStates.length; i++) {
-        logOut('updateGameboard cellStates[' + i + ']', cellStates[i]);
-    }
 
-    let gameboardHTML = '<grid-container>\n';
+    let gameboardHTML = '';
     if (gameState === GAME_STATE.INPROGRESS) {
         for (let i = 0; i < cellStates.length; i++) {
             if (cellStates[i] === CELL_STATE.EMPTY) {
@@ -218,9 +212,8 @@ function updateGameboard() {
             }
         }
     }
-
-    gameboardHTML = gameboardHTML + '</grid-container>';
-    document.getElementById('divGameboard').innerHTML = gameboardHTML;
+    logOut(gameboardHTML);
+    document.getElementById('gridGameboard').innerHTML = gameboardHTML;
 }
 
 function showPreferences() {
@@ -256,7 +249,6 @@ function handleMark(cellNumber) {
     }
 
     cellStates[cellNumber] = playerTurn;    // Player turn is tracked by giving the player an appropriate CELL_STATE.
-    emptyCells--;
 
     if (!updateWinStates()) {
         playerTurn = -playerTurn;
@@ -446,27 +438,6 @@ function resetGame() {
     }
 }
 
-function updateStylesheet(selector, property, value) {
-    // Adds or changes style in highest index of stylesheet.
-    let theStylesheet = document.styleSheets[(document.styleSheets.length - 1)];
-    let waitCount = 0;
-    while (theStylesheet === undefined && waitCount < 4) {
-        // Try again for up to 1 second if stylesheet wasn't loaded yet.
-        waitCount++;
-        sleep(250);
-        theStylesheet = document.styleSheets[(document.styleSheets.length - 1)];
-    }
-
-    for (let i = 0; i < theStylesheet.cssRules.length; i++) {
-        let rule = theStylesheet.cssRules[i];
-        if (rule.selectorText === selector) {
-            rule.style[property] = value;
-            return;
-        }
-    }
-    theStylesheet.insertRule(selector + " { " + property + ": " + value + "; }", 0);
-}
-
 // Based on https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/keyCode
 window.addEventListener("keydown", function (event) {
     if (event.defaultPrevented) {
@@ -547,6 +518,33 @@ function updateDifficulty() {
     // drawHangman();
 }
 
+
+function updateStylesheet(selector, property, value) {
+    // Adds or changes style in highest index of stylesheet.
+    let theStylesheet = document.styleSheets[(document.styleSheets.length - 1)];
+    let waitCount = 0;
+    while (theStylesheet === undefined && waitCount < 4) {
+        // Try again for up to 1 second if stylesheet wasn't loaded yet.
+        waitCount++;
+        sleep(250);
+        theStylesheet = document.styleSheets[(document.styleSheets.length - 1)];
+    }
+
+    logOut('theStylesheet', theStylesheet);
+    if(theStylesheet === undefined) {
+        return false;
+    }
+
+    for (let i = 0; i < theStylesheet.cssRules.length; i++) {
+        let rule = theStylesheet.cssRules[i];
+        if (rule.selectorText === selector) {
+            rule.style[property] = value;
+            return true;
+        }
+    }
+    theStylesheet.insertRule(selector + " { " + property + ": " + value + "; }", 0);
+    return true;
+}
 
 // We'll probably need this later...
 function randIntBetween(randMin, randMax) {
