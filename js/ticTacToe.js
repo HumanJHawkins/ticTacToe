@@ -83,10 +83,6 @@ function handleDisplayRefresh() {
     //   https://docs.microsoft.com/en-us/windows/uwp/design/layout/screen-sizes-and-breakpoints-for-responsive-design
     let pageHTML;
 
-    // TO DO: There is a race condition between loading the css and updating it. Make this wait until css is available.
-    // Temp kluge:
-    sleep(250);
-
     if (windowHeight > windowWidth) {
         // Tall Layout
         logOut('Using tall layout.');
@@ -453,6 +449,14 @@ function resetGame() {
 function updateStylesheet(selector, property, value) {
     // Adds or changes style in highest index of stylesheet.
     let theStylesheet = document.styleSheets[(document.styleSheets.length - 1)];
+    let waitCount = 0;
+    while (theStylesheet === undefined && waitCount < 4) {
+        // Try again for up to 1 second if stylesheet wasn't loaded yet.
+        waitCount++;
+        sleep(250);
+        theStylesheet = document.styleSheets[(document.styleSheets.length - 1)];
+    }
+
     for (let i = 0; i < theStylesheet.cssRules.length; i++) {
         let rule = theStylesheet.cssRules[i];
         if (rule.selectorText === selector) {
