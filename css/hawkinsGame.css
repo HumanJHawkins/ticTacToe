@@ -39,19 +39,6 @@ td {
     padding: 0;
 }
 
-.gameLetter {
-    font-size: 12vw;
-    background-color: rebeccapurple;
-}
-
-.gameWin {
-    background-color: #A82E5D;
-}
-
-.gameTie {
-    background-color: #5EBFB6;
-}
-
 .hangmanWord {
     font-family: "Courier New", "Courier", monospaced, serif;
     letter-spacing: .5vw;
@@ -66,12 +53,6 @@ td {
 .hidden {
     visibility: hidden;
 }
-
-.missedLetter {
-    /* color: darkred;                  /*  Original */
-    color: #A82E5D; /*  Alternate Red: #914318      */
-}
-
 .letterBtn {
     font-family: "Courier New", "Courier", monospaced, serif;
     font-size: calc(8px + 3vw);
@@ -80,24 +61,6 @@ td {
     text-align: center;
     padding: 0;
 
-}
-
-.letterBtnActive {
-    /* background-color: lightcyan;     /*  Original */
-    background-color: #5EBFB6; /*  Alternate Blue: #1B8996 or #0BA3D2   */
-    color: black;
-}
-
-.letterBtnHit {
-    /* background-color: darkgreen;      /*  Original */
-    background-color: #759B67; /*  Alternate Green: #B9CE2B    */
-    color: white;
-}
-
-.letterBtnMiss {
-    /* background-color: darkred;       /*  Original */
-    background-color: #A82E5D; /*  Alternate Red: #914318      */
-    color: black;
 }
 
 select {
@@ -207,16 +170,13 @@ grid-container {
     display: grid;
     grid-gap: 0;
     grid-template-columns: repeat(3, 1fr);
-    width: 40vw;
-    height: 40vw;
 }
 
 grid-item {
     display: flex;
-    background-color: #759B67;
+    justify-content: center;
+    align-items: center;
 }
-
-
 
 img {
     margin: auto;
@@ -238,3 +198,48 @@ img {
 .bottom {
     border-top: 1vw solid black;
 }
+
+
+
+.gameLetter {
+    font-size: 12vw;
+    /*background-color: #5EBFB6;*/
+}
+
+.gameWin {
+    background-color: #A82E5D;;
+}
+
+.gameTie {
+    background-color: #759B67;
+}
+
+.letterBtnDefault {
+    background-color: #e8e8e8;
+    /* Need color medium dark grey? */
+}
+
+
+.letterBtnActive {
+    /* background-color: lightcyan;     /*  Original */
+    background-color: #5EBFB6; /*  Alternate Blue: #1B8996 or #0BA3D2   */
+    color: black;
+}
+
+.letterBtnHit {
+    /* background-color: darkgreen;      /*  Original */
+    background-color: #759B67; /*  Alternate Green: #B9CE2B    */
+    color: white;
+}
+
+.letterBtnMiss {
+    /* background-color: darkred;       /*  Original */
+    background-color: #A82E5D; /*  Alternate Red: #914318      */
+    color: black;
+}
+
+/*.missedLetter {*/
+    /*!* color: darkred;                  !*  Original *!*/
+    /*color: #A82E5D; !*  Alternate Red: #914318      *!*/
+/*}*/
+
