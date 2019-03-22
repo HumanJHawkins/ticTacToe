@@ -153,7 +153,7 @@ function updateGameboard() {
             } else if (cellStates[i] === CELL_STATE.CATS) {
                 gameboardHTML = gameboardHTML +
                     '<grid-item onclick="handleMark(' + i + ')" class="' + cellClasses[i] +
-                    ' gameLetter" id="cell' + i + '" class="hidden"><div>:</div></grid-item>\n';
+                    ' gameLetter" id="cell' + i + '"><div>:</div class="hidden"></grid-item>\n';
             } else {
                 alert('Error: GAME_STATE === IN_PROGRESS, but CELL_STATE shows game is won (or other incompatible ' +
                     'state).');
@@ -184,7 +184,7 @@ function updateGameboard() {
             } else if (cellStates[i] === CELL_STATE.CATS) {
                 gameboardHTML = gameboardHTML +
                     '<grid-item onclick="handleMark(' + i + ')" class="' + cellClasses[i] +
-                    ' gameLetter" id="cell' + i + '" class="hidden"><div>:</div></grid-item>\n';
+                    ' gameLetter" id="cell' + i + '"><div class="hidden">:</div></grid-item>\n';
             }
         }
     } else if (gameState === GAME_STATE.CATS) {
@@ -205,7 +205,7 @@ function updateGameboard() {
             } else if (cellStates[i] === CELL_STATE.CATS) {
                 gameboardHTML = gameboardHTML +
                     '<grid-item onclick="handleMark(' + i + ')" class="' + cellClasses[i] +
-                    ' gameLetter" id="cell' + i + '"><div>:</div></grid-item>\n';
+                    ' gameLetter" id="cell' + i + '"><div class="hidden">:</div></grid-item>\n';
             } else {
                 alert('Error: GAME_STATE === CATS, but CELL_STATE shows game is won (or other incompatible ' +
                     'state).');
