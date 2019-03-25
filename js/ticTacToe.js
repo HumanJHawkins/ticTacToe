@@ -1,4 +1,8 @@
+// Temp: Kluge to avoid race condition until I find it.
+sleep(1000);
+
 // Initialize global constants/statics. Load word list, etc.
+
 let GAME_STATE = Object.freeze({
     "ERROR": 0,
     "INPROGRESS": 1,
@@ -79,23 +83,24 @@ function handleDisplaySize() {
 }
 
 function handleDisplayRefresh() {
-    // Theory: Gameboard is square, so ideal layout depends only on which screen/window dimwension is larger.
-    //   of height / width.
-    //
-    // See also:
     //   https://docs.microsoft.com/en-us/windows/uwp/design/layout/screen-sizes-and-breakpoints-for-responsive-design
+
+    let heightWidthRatio = windowHeight / windowWidth;
     let pageHTML;
-    if (windowHeight > windowWidth) {
+    if (heightWidthRatio > .7) {
         // Tall Layout
         logOut('Using tall layout.');
 
         updateStylesheet("grid-container", "float", "none");
         updateStylesheet("grid-container", "width", "80vw");
         updateStylesheet("grid-container", "height", "80vw");
-        updateStylesheet("grid-container", "margin", "10vw 10vw");
+        updateStylesheet("grid-container", "max-width", "70vh");
+        updateStylesheet("grid-container", "max-height", "70vh");
+        updateStylesheet("grid-container", "margin", "auto");
+        updateStylesheet("grid-container", "padding-top", "5vw");
         pageHTML =
             '<h1>Tic-Tac-Toe' +
-            '<img src="image/blank.png" alt="" class="iconButtonSpacer"/>' +
+            '<span class="nowrap"><img src="image/blank.png" alt="" class="iconButtonSpacer"/>' +
             '<img src="image/blank.png" alt="" class="iconButtonSpacer"/>' +
             '<img src="image/blank.png" alt="" class="iconButtonSpacer"/>' +
             '<img src="image/preferences.png" alt="Preferences" onClick="showPreferences()" class="iconButtonImage"/>' +
@@ -103,17 +108,20 @@ function handleDisplayRefresh() {
             '<img src="image/about.png" alt="About" onClick="showAbout()" class="iconButtonImage"/>' +
             '<img src="image/blank.png" alt="" class="iconButtonSpacer"/>' +
             '<img src="image/newGame.png" alt="New Game" onClick="resetGame()" class="iconButtonImage"/>' +
-            '</h1><grid-container id="gridGameboard"></grid-container>';
+            '</span></h1><grid-container id="gridGameboard"></grid-container>';
     } else {
         // Wide Layout
         logOut('Using wide layout.');
         updateStylesheet("grid-container", "float", "left");
         updateStylesheet("grid-container", "width", "80vh");
         updateStylesheet("grid-container", "height", "80vh");
-        updateStylesheet("grid-container", "margin", "5vh default 15vh 5vh");
+        updateStylesheet("grid-container", "max-width", "50vw");
+        updateStylesheet("grid-container", "max-height", "50vw");
+        updateStylesheet("grid-container", "margin", "5vh default 10vh 5vh");
+        updateStylesheet("grid-container", "padding-top", "5vh");
         pageHTML = '<grid-container id="gridGameboard"></grid-container>' +
             '<h1>Tic-Tac-Toe' +
-            '<img src="image/blank.png" alt="" class="iconButtonSpacer"/>' +
+            '<span class="nowrap"><img src="image/blank.png" alt="" class="iconButtonSpacer"/>' +
             '<img src="image/blank.png" alt="" class="iconButtonSpacer"/>' +
             '<img src="image/blank.png" alt="" class="iconButtonSpacer"/>' +
             '<img src="image/preferences.png" alt="Preferences" onClick="showPreferences()" class="iconButtonImage"/>' +
@@ -121,7 +129,7 @@ function handleDisplayRefresh() {
             '<img src="image/about.png" alt="About" onClick="showAbout()" class="iconButtonImage"/>' +
             '<img src="image/blank.png" alt="" class="iconButtonSpacer"/>' +
             '<img src="image/newGame.png" alt="New Game" onClick="resetGame()" class="iconButtonImage"/>' +
-            '</h1>';
+            '</span></h1>';
     }
 
     document.getElementById('entirePage').innerHTML = pageHTML;
@@ -147,11 +155,11 @@ function updateGameboard() {
             if (cellStates[i] === CELL_STATE.EMPTY) {
                 gameboardHTML = gameboardHTML +
                     '<grid-item onclick="handleMark(' + i + ')" class="' + cellClasses[i] +
-                    ' gameLetter" id="cell' + i + '"><div class="hidden">-</div></grid-item>\n';
+                    ' gameLetter" id="cell' + i + '"><div class="hidden">W</div></grid-item>\n';
             } else if (cellStates[i] === CELL_STATE.PLAYER_X) {
                 gameboardHTML = gameboardHTML +
-                    '<grid-item onclick="handleMark(' + i + ')" class="' + cellClasses[i] +
-                    ' gameLetter" id="cell' + i + '"><div>X</div></grid-item>\n';
+                    '<griditem onclick="handleMark(' + i + ')" class="' + cellClasses[i] +
+                    ' gameLetter" id="cell' + i + '"><div>X</div></griditem>\n';
             } else if (cellStates[i] === CELL_STATE.PLAYER_O) {
                 gameboardHTML = gameboardHTML +
                     '<grid-item onclick="handleMark(' + i + ')" class="' + cellClasses[i] +
@@ -159,7 +167,7 @@ function updateGameboard() {
             } else if (cellStates[i] === CELL_STATE.CATS) {
                 gameboardHTML = gameboardHTML +
                     '<grid-item onclick="handleMark(' + i + ')" class="' + cellClasses[i] +
-                    ' gameLetter" id="cell' + i + '"><div>:</div class="hidden"></grid-item>\n';
+                    ' gameLetter" id="cell' + i + '"><div>W</div class="hidden"></grid-item>\n';
             } else {
                 alert('Error: GAME_STATE === IN_PROGRESS, but CELL_STATE is ' + cellStates[i] + ').');
             }
@@ -169,7 +177,7 @@ function updateGameboard() {
             if (cellStates[i] === CELL_STATE.EMPTY) {
                 gameboardHTML = gameboardHTML +
                     '<grid-item onclick="handleMark(' + i + ')" class="' + cellClasses[i] +
-                    ' gameLetter" id="cell' + i + '"><div class="hidden">-</div></grid-item>\n';
+                    ' gameLetter" id="cell' + i + '"><div class="hidden">W</div></grid-item>\n';
             } else if (cellStates[i] === CELL_STATE.PLAYER_X) {
                 gameboardHTML = gameboardHTML +
                     '<grid-item onclick="handleMark(' + i + ')" class="' + cellClasses[i] +
@@ -189,7 +197,7 @@ function updateGameboard() {
             } else if (cellStates[i] === CELL_STATE.CATS) {
                 gameboardHTML = gameboardHTML +
                     '<grid-item onclick="handleMark(' + i + ')" class="' + cellClasses[i] +
-                    ' gameLetter" id="cell' + i + '"><div class="hidden">:</div></grid-item>\n';
+                    ' gameLetter" id="cell' + i + '"><div class="hidden">W</div></grid-item>\n';
             }
         }
     } else if (gameState === GAME_STATE.CATS) {
@@ -198,7 +206,7 @@ function updateGameboard() {
             if (cellStates[i] === CELL_STATE.EMPTY) {
                 gameboardHTML = gameboardHTML +
                     '<grid-item onclick="handleMark(' + i + ')" class="' + cellClasses[i] +
-                    ' gameLetter" id="cell' + i + '"><div class="hidden">-</div></grid-item>\n';
+                    ' gameLetter" id="cell' + i + '"><div class="hidden">W</div></grid-item>\n';
             } else if (cellStates[i] === CELL_STATE.PLAYER_X) {
                 gameboardHTML = gameboardHTML +
                     '<grid-item onclick="handleMark(' + i + ')" class="' + cellClasses[i] +
@@ -210,7 +218,7 @@ function updateGameboard() {
             } else if (cellStates[i] === CELL_STATE.CATS) {
                 gameboardHTML = gameboardHTML +
                     '<grid-item onclick="handleMark(' + i + ')" class="' + cellClasses[i] +
-                    ' gameLetter" id="cell' + i + '"><div class="hidden">:</div></grid-item>\n';
+                    ' gameLetter" id="cell' + i + '"><div class="hidden">W</div></grid-item>\n';
             } else {
                 alert('Error: GAME_STATE === CATS, but CELL_STATE shows game is won (or other incompatible ' +
                     'state).');
@@ -494,6 +502,7 @@ window.addEventListener("keydown", function (event) {
 addEventListener('resize', function () {
     handleDisplaySize();
     handleDisplayRefresh();
+    // updateEnabledState();
 });
 
 window.onclick = function (event) {

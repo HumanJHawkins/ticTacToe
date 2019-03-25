@@ -242,3 +242,6 @@ img {
     /*color: #A82E5D; !*  Alternate Red: #914318      *!*/
 /*}*/
 
+.nowrap {
+    white-space: nowrap;
+}
