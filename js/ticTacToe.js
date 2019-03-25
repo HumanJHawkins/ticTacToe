@@ -156,7 +156,7 @@ function updateGameboard() {
             } else if (cellStates[i] === CELL_STATE.CATS) {
                 gameboardHTML = gameboardHTML +
                     '<grid-item onclick="handleMark(' + i + ')" class="' + cellClasses[i] +
-                    ' gameLetter" id="cell' + i + '"><div>W</div class="hidden"></grid-item>\n';
+                    ' gameLetter" id="cell' + i + '"><div class="hidden">W</div></grid-item>\n';
             } else {
                 alert('Error: GAME_STATE === IN_PROGRESS, but CELL_STATE is ' + cellStates[i] + ').');
             }
