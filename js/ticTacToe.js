@@ -46,6 +46,11 @@ newGame();
 // Function declarations
 function newGame() {
     playerTurn = CELL_STATE.PLAYER_X;
+
+    for (let i = 0; i < cellStates.length; i++) {
+        cellStates[i] = CELL_STATE.EMPTY;
+    }
+
     setGameState(GAME_STATE.INPROGRESS);
     handleDisplaySize();        // Handles full screen draw.
     handleDisplayRefresh();
@@ -80,7 +85,6 @@ function handleDisplayRefresh() {
     // See also:
     //   https://docs.microsoft.com/en-us/windows/uwp/design/layout/screen-sizes-and-breakpoints-for-responsive-design
     let pageHTML;
-
     if (windowHeight > windowWidth) {
         // Tall Layout
         logOut('Using tall layout.');
@@ -157,8 +161,7 @@ function updateGameboard() {
                     '<grid-item onclick="handleMark(' + i + ')" class="' + cellClasses[i] +
                     ' gameLetter" id="cell' + i + '"><div>:</div class="hidden"></grid-item>\n';
             } else {
-                alert('Error: GAME_STATE === IN_PROGRESS, but CELL_STATE shows game is won (or other incompatible ' +
-                    'state).');
+                alert('Error: GAME_STATE === IN_PROGRESS, but CELL_STATE is ' + cellStates[i] + ').');
             }
         }
     } else if (gameState === GAME_STATE.WIN) {
@@ -297,6 +300,11 @@ function updateWinStates() {
     if (Math.abs(cellStates[6] + cellStates[7] + cellStates[8]) === 3) {
         cellStates[6] = cellStates[7] = cellStates[8] = playerTurn + GAME_STATE.WIN;
     }
+
+
+// This is not working?
+// This is not working?
+// This is not working?
 
     if (cellStates.find(function (el) {
         return el >= CELL_STATE.WIN_X;
