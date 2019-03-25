@@ -83,14 +83,23 @@ function handleDisplaySize() {
 }
 
 function handleDisplayRefresh() {
-    //   https://docs.microsoft.com/en-us/windows/uwp/design/layout/screen-sizes-and-breakpoints-for-responsive-design
-
-    let heightWidthRatio = windowHeight / windowWidth;
     let pageHTML;
+    let controlsHTML = '<h1>Tic-Tac-Toe' +
+        '<span class="nowrap"><img src="image/blank.png" alt="" class="iconButtonSpacer"/>' +
+        '<img src="image/blank.png" alt="" class="iconButtonSpacer"/>' +
+        '<img src="image/blank.png" alt="" class="iconButtonSpacer"/>' +
+        '<img src="image/preferences.png" alt="Preferences" onClick="showPreferences()" class="iconButtonImage"/>' +
+        '<img src="image/help.png" alt="Help" onClick="showHelp()" class="iconButtonImage"/>' +
+        '<img src="image/about.png" alt="About" onClick="showAbout()" class="iconButtonImage"/>' +
+        '<img src="image/blank.png" alt="" class="iconButtonSpacer"/>' +
+        '<img src="image/newGame.png" alt="New Game" onClick="resetGame()" class="iconButtonImage"/>' +
+        '</span></h1>';
+
+    //   https://docs.microsoft.com/en-us/windows/uwp/design/layout/screen-sizes-and-breakpoints-for-responsive-design
+    let heightWidthRatio = windowHeight / windowWidth;
     if (heightWidthRatio > .7) {
         // Tall Layout
         logOut('Using tall layout.');
-
         updateStylesheet("grid-container", "float", "none");
         updateStylesheet("grid-container", "width", "80vw");
         updateStylesheet("grid-container", "height", "80vw");
@@ -98,17 +107,7 @@ function handleDisplayRefresh() {
         updateStylesheet("grid-container", "max-height", "70vh");
         updateStylesheet("grid-container", "margin", "auto");
         updateStylesheet("grid-container", "padding-top", "5vw");
-        pageHTML =
-            '<h1>Tic-Tac-Toe' +
-            '<span class="nowrap"><img src="image/blank.png" alt="" class="iconButtonSpacer"/>' +
-            '<img src="image/blank.png" alt="" class="iconButtonSpacer"/>' +
-            '<img src="image/blank.png" alt="" class="iconButtonSpacer"/>' +
-            '<img src="image/preferences.png" alt="Preferences" onClick="showPreferences()" class="iconButtonImage"/>' +
-            '<img src="image/help.png" alt="Help" onClick="showHelp()" class="iconButtonImage"/>' +
-            '<img src="image/about.png" alt="About" onClick="showAbout()" class="iconButtonImage"/>' +
-            '<img src="image/blank.png" alt="" class="iconButtonSpacer"/>' +
-            '<img src="image/newGame.png" alt="New Game" onClick="resetGame()" class="iconButtonImage"/>' +
-            '</span></h1><grid-container id="gridGameboard"></grid-container>';
+        pageHTML = controlsHTML + '<grid-container id="gridGameboard"></grid-container>';
     } else {
         // Wide Layout
         logOut('Using wide layout.');
@@ -119,17 +118,7 @@ function handleDisplayRefresh() {
         updateStylesheet("grid-container", "max-height", "50vw");
         updateStylesheet("grid-container", "margin", "5vh default 10vh 5vh");
         updateStylesheet("grid-container", "padding-top", "5vh");
-        pageHTML = '<grid-container id="gridGameboard"></grid-container>' +
-            '<h1>Tic-Tac-Toe' +
-            '<span class="nowrap"><img src="image/blank.png" alt="" class="iconButtonSpacer"/>' +
-            '<img src="image/blank.png" alt="" class="iconButtonSpacer"/>' +
-            '<img src="image/blank.png" alt="" class="iconButtonSpacer"/>' +
-            '<img src="image/preferences.png" alt="Preferences" onClick="showPreferences()" class="iconButtonImage"/>' +
-            '<img src="image/help.png" alt="Help" onClick="showHelp()" class="iconButtonImage"/>' +
-            '<img src="image/about.png" alt="About" onClick="showAbout()" class="iconButtonImage"/>' +
-            '<img src="image/blank.png" alt="" class="iconButtonSpacer"/>' +
-            '<img src="image/newGame.png" alt="New Game" onClick="resetGame()" class="iconButtonImage"/>' +
-            '</span></h1>';
+        pageHTML = '<grid-container id="gridGameboard"></grid-container>' + controlsHTML;
     }
 
     document.getElementById('entirePage').innerHTML = pageHTML;
