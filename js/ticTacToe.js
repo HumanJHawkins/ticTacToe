@@ -44,7 +44,6 @@ let buttonAbout;
 let buttonCloseAbout;
 
 newGame();
-
 function newGame() {
     playerTurn = CELL_STATE.PLAYER_X;
 
@@ -57,15 +56,6 @@ function newGame() {
     handleDisplayRefresh();
     updateEnabledState();       // Requires preference controls created in handleDisplaySize().
 }
-
-function logOut(desc = '', data = '') {
-    let separator = ': ';
-    if (desc === '' || data === '') {
-        separator = '';
-    }
-    console.log(desc + separator + data)
-}
-
 
 function handleDisplaySize() {
     // Window dimensions in pixels. Although we use view width for almost everything, most decisions about layout are
@@ -351,7 +341,7 @@ function updateStylesheet(selector, property, value) {
     while (theStylesheet === undefined && waitCount < 4) {
         // Try again for up to 1 second if stylesheet wasn't loaded yet.
         waitCount++;
-        sleep(250);
+        // sleep(250);
         theStylesheet = document.styleSheets[(document.styleSheets.length - 1)];
     }
 
@@ -374,4 +364,12 @@ function updateStylesheet(selector, property, value) {
 // We'll probably need this later...
 function randIntBetween(randMin, randMax) {
     return Math.floor(Math.random() * (randMax - randMin + 1) + randMin);
+}
+
+function logOut(desc = '', data = '') {
+    let separator = ': ';
+    if (desc === '' || data === '') {
+        separator = '';
+    }
+    console.log(desc + separator + data)
 }
