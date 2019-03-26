@@ -1,8 +1,7 @@
-// Temp: Kluge to avoid race condition until I find it.
+// Kluge to avoid race condition until I find it.
 sleep(1000);
 
-// Initialize global constants/statics. Load word list, etc.
-
+// Globals
 let GAME_STATE = Object.freeze({
     "ERROR": 0,
     "INPROGRESS": 1,
@@ -11,22 +10,24 @@ let GAME_STATE = Object.freeze({
 });
 
 let CELL_STATE = Object.freeze({
-    "CATS": -10,    // Cannot contribute to a win
-    "PLAYER_X": -1, // Also used for player turn
+    "PLAYER_X": -1,   // Also used for player turn
     "EMPTY": 0,
-    "PLAYER_O": 1,  // Also used for player turn
-    "WIN_X": 9,     // GAME_STATE.WIN + CELL_STATE.PLAYER_X
-    "WIN_O": 11     // GAME_STATE.WIN + CELL_STATE.PLAYER_O
+    "PLAYER_O": 1,    // Also used for player turn
+    "WIN_X": 9,    // GAME_STATE.WIN + CELL_STATE.PLAYER_X
+    "WIN_O": 11    // GAME_STATE.WIN + CELL_STATE.PLAYER_O
 });
 
-
-let cellClasses = ['top left', 'top', 'top right',
-    'left', '', 'right',
-    'bottom left', 'bottom', 'bottom right'];
-
-let cellStates = [CELL_STATE.EMPTY, CELL_STATE.EMPTY, CELL_STATE.EMPTY,
-    CELL_STATE.EMPTY, CELL_STATE.EMPTY, CELL_STATE.EMPTY,
-    CELL_STATE.EMPTY, CELL_STATE.EMPTY, CELL_STATE.EMPTY];
+let cells = [
+    {state: CELL_STATE.EMPTY, class: 'top left', inRows: [[1, 2], [3, 6], [4, 8]]},
+    {state: CELL_STATE.EMPTY, class: 'top', inRows: [[0, 1], [4, 7]]},
+    {state: CELL_STATE.EMPTY, class: 'top right', inRows: [[0, 1], [4, 6], [5, 8]]},
+    {state: CELL_STATE.EMPTY, class: 'left', inRows: [[0, 6], [4, 5]]},
+    {state: CELL_STATE.EMPTY, class: '', inRows: [[0, 8], [1, 7], [2, 6], [3, 5]]},
+    {state: CELL_STATE.EMPTY, class: 'right', inRows: [[2, 8], [3, 4]]},
+    {state: CELL_STATE.EMPTY, class: 'bottom left', inRows: [[0, 3], [7, 8]]},
+    {state: CELL_STATE.EMPTY, class: 'bottom', inRows: [[1, 4], [6, 8]]},
+    {state: CELL_STATE.EMPTY, class: 'bottom right', inRows: [[0, 4], [2, 5], [6, 7]]},
+];
 
 let gameState;
 let gameDifficulty;
@@ -47,31 +48,25 @@ let buttonCloseAbout;
 
 newGame();
 
-// Function declarations
 function newGame() {
     playerTurn = CELL_STATE.PLAYER_X;
 
-    for (let i = 0; i < cellStates.length; i++) {
-        cellStates[i] = CELL_STATE.EMPTY;
+    for (let i = 0; i < cells.length; i++) {
+        cells[i].state = CELL_STATE.EMPTY;
     }
 
     setGameState(GAME_STATE.INPROGRESS);
     handleDisplaySize();        // Handles full screen draw.
     handleDisplayRefresh();
     updateEnabledState();       // Requires preference controls created in handleDisplaySize().
-
-    logOut('newGame playerTurn', playerTurn);
-    logOut('newGame gameState', gameState);
-    logOut('newGame windowWidth', windowWidth);
-    logOut('newGame windowHeight', windowHeight);
 }
 
 function logOut(desc = '', data = '') {
-    let seperator = ': ';
+    let separator = ': ';
     if (desc === '' || data === '') {
-        seperator = '';
+        separator = '';
     }
-    console.log(desc + seperator + data)
+    console.log(desc + separator + data)
 }
 
 
@@ -137,80 +132,68 @@ function handleDisplayRefresh() {
 }
 
 function updateGameboard() {
-
     let gameboardHTML = '';
     if (gameState === GAME_STATE.INPROGRESS) {
-        for (let i = 0; i < cellStates.length; i++) {
-            if (cellStates[i] === CELL_STATE.EMPTY) {
+        for (let i = 0; i < cells.length; i++) {
+            if (cells[i].state === CELL_STATE.EMPTY) {
                 gameboardHTML = gameboardHTML +
-                    '<grid-item onclick="handleMark(' + i + ')" class="' + cellClasses[i] +
+                    '<grid-item onclick="handleMark(' + i + ')" class="' + cells[i].class +
                     ' gameLetter" id="cell' + i + '"><div class="hidden">W</div></grid-item>\n';
-            } else if (cellStates[i] === CELL_STATE.PLAYER_X) {
+            } else if (cells[i].state === CELL_STATE.PLAYER_X) {
                 gameboardHTML = gameboardHTML +
-                    '<griditem onclick="handleMark(' + i + ')" class="' + cellClasses[i] +
+                    '<griditem onclick="handleMark(' + i + ')" class="' + cells[i].class +
                     ' gameLetter" id="cell' + i + '"><div>X</div></griditem>\n';
-            } else if (cellStates[i] === CELL_STATE.PLAYER_O) {
+            } else if (cells[i].state === CELL_STATE.PLAYER_O) {
                 gameboardHTML = gameboardHTML +
-                    '<grid-item onclick="handleMark(' + i + ')" class="' + cellClasses[i] +
+                    '<grid-item onclick="handleMark(' + i + ')" class="' + cells[i].class +
                     ' gameLetter" id="cell' + i + '"><div>O</div></grid-item>\n';
-            } else if (cellStates[i] === CELL_STATE.CATS) {
-                gameboardHTML = gameboardHTML +
-                    '<grid-item onclick="handleMark(' + i + ')" class="' + cellClasses[i] +
-                    ' gameLetter" id="cell' + i + '"><div class="hidden">W</div></grid-item>\n';
             } else {
-                alert('Error: GAME_STATE === IN_PROGRESS, but CELL_STATE is ' + cellStates[i] + ').');
+                alert('Error: GAME_STATE === IN_PROGRESS, but CELL_STATE is ' + cells[i].class + ').');
             }
         }
     } else if (gameState === GAME_STATE.WIN) {
-        for (let i = 0; i < cellStates.length; i++) {
-            if (cellStates[i] === CELL_STATE.EMPTY) {
+        for (let i = 0; i < cells.length; i++) {
+            if (cells[i].state === CELL_STATE.EMPTY) {
                 gameboardHTML = gameboardHTML +
-                    '<grid-item onclick="handleMark(' + i + ')" class="' + cellClasses[i] +
+                    '<grid-item onclick="handleMark(' + i + ')" class="' + cells[i].class +
                     ' gameLetter" id="cell' + i + '"><div class="hidden">W</div></grid-item>\n';
-            } else if (cellStates[i] === CELL_STATE.PLAYER_X) {
+            } else if (cells[i].state === CELL_STATE.PLAYER_X) {
                 gameboardHTML = gameboardHTML +
-                    '<grid-item onclick="handleMark(' + i + ')" class="' + cellClasses[i] +
+                    '<grid-item onclick="handleMark(' + i + ')" class="' + cells[i].class +
                     ' gameLetter" id="cell' + i + '"><div>X</div></grid-item>\n';
-            } else if (cellStates[i] === CELL_STATE.PLAYER_O) {
+            } else if (cells[i].state === CELL_STATE.PLAYER_O) {
                 gameboardHTML = gameboardHTML +
-                    '<grid-item onclick="handleMark(' + i + ')" class="' + cellClasses[i] +
+                    '<grid-item onclick="handleMark(' + i + ')" class="' + cells[i].class +
                     ' gameLetter" id="cell' + i + '"><div>O</div></grid-item>\n';
-            } else if (cellStates[i] === CELL_STATE.WIN_X) {
+            } else if (cells[i].state === CELL_STATE.WIN_X) {
                 gameboardHTML = gameboardHTML +
-                    '<grid-item onclick="handleMark(' + i + ')" class="' + cellClasses[i] +
+                    '<grid-item onclick="handleMark(' + i + ')" class="' + cells[i].class +
                     ' gameLetter gameWin" id="cell' + i + '"><div>X</div></grid-item>\n';
-            } else if (cellStates[i] === CELL_STATE.WIN_O) {
+            } else if (cells[i].state === CELL_STATE.WIN_O) {
                 gameboardHTML = gameboardHTML +
-                    '<grid-item onclick="handleMark(' + i + ')" class="' + cellClasses[i] +
+                    '<grid-item onclick="handleMark(' + i + ')" class="' + cells[i].class +
                     ' gameLetter gameWin" id="cell' + i + '"><div>O</div></grid-item>\n';
-            } else if (cellStates[i] === CELL_STATE.CATS) {
-                gameboardHTML = gameboardHTML +
-                    '<grid-item onclick="handleMark(' + i + ')" class="' + cellClasses[i] +
-                    ' gameLetter" id="cell' + i + '"><div class="hidden">W</div></grid-item>\n';
+            } else {
+                alert('Error: GAME_STATE === WIN, but CELL_STATE is ' + cells[i].state + ').');
             }
         }
     } else if (gameState === GAME_STATE.CATS) {
-        for (let i = 0; i < cellStates.length; i++) {
+        for (let i = 0; i < cells.length; i++) {
             // There should be no case where a cell is empty at this point.
-            if (cellStates[i] === CELL_STATE.EMPTY) {
+            if (cells[i].state === CELL_STATE.EMPTY) {
                 gameboardHTML = gameboardHTML +
-                    '<grid-item onclick="handleMark(' + i + ')" class="' + cellClasses[i] +
-                    ' gameLetter" id="cell' + i + '"><div class="hidden">W</div></grid-item>\n';
-            } else if (cellStates[i] === CELL_STATE.PLAYER_X) {
+                    '<grid-item onclick="handleMark(' + i + ')" class="' + cells[i].class +
+                    ' gameLetter" id="cell' + i + '"><div class="hidden gameTie">W</div></grid-item>\n';
+            } else if (cells[i].state === CELL_STATE.PLAYER_X) {
                 gameboardHTML = gameboardHTML +
-                    '<grid-item onclick="handleMark(' + i + ')" class="' + cellClasses[i] +
-                    ' gameLetter" id="cell' + i + '"><div>X</div></grid-item>\n';
-            } else if (cellStates[i] === CELL_STATE.PLAYER_O) {
+                    '<grid-item onclick="handleMark(' + i + ')" class="' + cells[i].class +
+                    ' gameLetter gameTie" id="cell' + i + '"><div>X</div></grid-item>\n';
+            } else if (cells[i].state === CELL_STATE.PLAYER_O) {
                 gameboardHTML = gameboardHTML +
-                    '<grid-item onclick="handleMark(' + i + ')" class="' + cellClasses[i] +
-                    ' gameLetter" id="cell' + i + '"><div>O</div></grid-item>\n';
-            } else if (cellStates[i] === CELL_STATE.CATS) {
-                gameboardHTML = gameboardHTML +
-                    '<grid-item onclick="handleMark(' + i + ')" class="' + cellClasses[i] +
-                    ' gameLetter" id="cell' + i + '"><div class="hidden">W</div></grid-item>\n';
+                    '<grid-item onclick="handleMark(' + i + ')" class="' + cells[i].class +
+                    ' gameLetter gameTie" id="cell' + i + '"><div>O</div></grid-item>\n';
             } else {
-                alert('Error: GAME_STATE === CATS, but CELL_STATE shows game is won (or other incompatible ' +
-                    'state).');
+                alert('Error: GAME_STATE === CATS, but CELL_STATE is ' + cells[i].state + ').');
             }
         }
     }
@@ -242,186 +225,61 @@ function updateEnabledState() {
 
 function handleMark(cellNumber) {
     logOut('handleMark gameState', gameState);
-    logOut('handleMark cellStates[' + cellNumber + ']', cellStates[cellNumber]);
+    logOut('handleMark cells[' + cellNumber + '].state', cells[cellNumber].state);
 
     // Ignore marks when game over or the cell is already marked, etc.
     if (gameState !== GAME_STATE.INPROGRESS ||
-        (cellStates[cellNumber] !== CELL_STATE.EMPTY && cellStates[cellNumber] !== CELL_STATE.CATS)) {
+        (cells[cellNumber].state !== CELL_STATE.EMPTY)) {
         return;
     }
 
-    cellStates[cellNumber] = playerTurn;    // Player turn is tracked by giving the player an appropriate CELL_STATE.
+    cells[cellNumber].state = playerTurn;    // Player turn is tracked by giving the player an appropriate CELL_STATE.
 
     if (!updateWinStates()) {
         playerTurn = -playerTurn;
     }
 
-    updateCatsStates();
+    updateCatsState();
     handleDisplayRefresh();
 }
 
 function updateWinStates() {
-    // Marked cellStates are either 1 or -1, and no CELL_STATE is 2 or 3. So, if the absolute value of the sum of any
+    setRowWin(0, 1, 2);
+    setRowWin(0, 3, 6);
+    setRowWin(0, 4, 8);
+    setRowWin(1, 4, 7);
+    setRowWin(2, 4, 6);
+    setRowWin(2, 5, 8);
+    setRowWin(3, 4, 5);
+    setRowWin(6, 7, 8);
+}
+
+function setRowWin(cellA, cellB, cellC) {
+    // Marked cell states are either 1 or -1, and no CELL_STATE is 2 or 3. So, if the absolute value of the sum of any
     //   row is 3, it is a winning row.
-    //
-    // playerTurn contains CELL_STATE for player. Adding GAME_STATE to this number results in CELL_STATE.WIN for
-    // appropriate player.
-    if (Math.abs(cellStates[0] + cellStates[1] + cellStates[2]) === 3) {
-        cellStates[0] = cellStates[1] = cellStates[2] = playerTurn + GAME_STATE.WIN;
-    }
-
-    if (Math.abs(cellStates[0] + cellStates[3] + cellStates[6]) === 3) {
-        cellStates[0] = cellStates[3] = cellStates[6] = playerTurn + GAME_STATE.WIN;
-    }
-
-    if (Math.abs(cellStates[0] + cellStates[4] + cellStates[8]) === 3) {
-        cellStates[0] = cellStates[4] = cellStates[8] = playerTurn + GAME_STATE.WIN;
-    }
-
-    if (Math.abs(cellStates[1] + cellStates[4] + cellStates[7]) === 3) {
-        cellStates[1] = cellStates[4] = cellStates[7] = playerTurn + GAME_STATE.WIN;
-    }
-
-    if (Math.abs(cellStates[2] + cellStates[4] + cellStates[6]) === 3) {
-        cellStates[2] = cellStates[4] = cellStates[6] = playerTurn + GAME_STATE.WIN;
-    }
-
-    if (Math.abs(cellStates[2] + cellStates[5] + cellStates[8]) === 3) {
-        cellStates[2] = cellStates[5] = cellStates[8] = playerTurn + GAME_STATE.WIN;
-    }
-
-    if (Math.abs(cellStates[3] + cellStates[4] + cellStates[5]) === 3) {
-        cellStates[3] = cellStates[4] = cellStates[5] = playerTurn + GAME_STATE.WIN;
-    }
-
-    if (Math.abs(cellStates[6] + cellStates[7] + cellStates[8]) === 3) {
-        cellStates[6] = cellStates[7] = cellStates[8] = playerTurn + GAME_STATE.WIN;
-    }
-
-
-// This is not working?
-// This is not working?
-// This is not working?
-
-    if (cellStates.find(function (el) {
-        return el >= CELL_STATE.WIN_X;
-    }) >= CELL_STATE.WIN_X) {
+    if (Math.abs(cells[cellA].state + cells[cellB].state + cells[cellC].state) === 3) {
+        // playerTurn contains CELL_STATE for player. Adding GAME_STATE to this number results in CELL_STATE.WIN for
+        // appropriate player.
+        cells[cellA].state = cells[cellB].state = cells[cellC].state = playerTurn + GAME_STATE.WIN;
         updateGameState(GAME_STATE.WIN);
-        return true;
-    } else {
-        return false;
     }
 }
 
-function updateCatsStates() {
-    // If the game is won, all empty cells become equivalent to CATS cells (not potentially winning).
-    if (cellStates.find(function (el) {
-        return el === CELL_STATE.WIN;
-    }) !== undefined) {
-        for (let i = 0; i < cellStates.length; i++) {
-            if (cellStates[i] === CELL_STATE.EMPTY) {
-                cellStates[i] = CELL_STATE.CATS
-            }
+function updateCatsState() {
+    // A winning game cannot be a cats game.
+    if(gameState === GAME_STATE.WIN) return false;
+
+    // See commits prior to 2019/03/26 for function identifying useless rows. Turned out not to be fun.
+    // Players like to play to the end without the computer telling them it's going to be a cats game.
+    // So, if any cell is not empty, it is not yet a cats game.
+    for (let i = 0; i < cells.length; i++) {
+        if (cells[i].state === CELL_STATE.EMPTY) {
+            return false;
         }
     }
 
-    // TO DO: Also handle the case where two cells are empty in a row, but due to player turn and limited moves, there
-    // is no case where the game can be won.
-
-    // For the purpose of this game, we'll define "CATS" CELL_STATUS to mean a cell that cannot be used to win the game.
-    // Therefore, a cell where all related rows contain one of each mark is a "CATS" cell, to be used to determine if
-    // this is a "CATS" game.
-    //
-    // NOTE: Due to CELL_STATE.PLAYER_X and CELL_STATE.PLAYER_O being 1 and -1, if either cell on the same row is not
-    // empty, and the sum of those two other cell states is not zero, then we know the row in question has one of each
-    // mark, therefore is a CATS cell.
-
-    // Cell 0 concerns (1,2) (3,6) (4,8)
-    if (cellStates[0] === CELL_STATE.EMPTY &&
-        (cellStates[1] !== CELL_STATE.EMPTY && cellStates[1] + cellStates[2] === 0) &&
-        (cellStates[3] !== CELL_STATE.EMPTY && cellStates[3] + cellStates[6] === 0) &&
-        (cellStates[4] !== CELL_STATE.EMPTY && cellStates[4] + cellStates[8] === 0)
-    ) {
-        cellStates[0] = CELL_STATE.CATS;
-    }
-
-    // Cell 1 concerns (0,2) (4,7)
-    if (cellStates[1] === CELL_STATE.EMPTY &&
-        (cellStates[0] !== CELL_STATE.EMPTY && cellStates[0] + cellStates[2] === 0) &&
-        (cellStates[4] !== CELL_STATE.EMPTY && cellStates[4] + cellStates[7] === 0)
-    ) {
-        cellStates[1] = CELL_STATE.CATS;
-    }
-
-    // Cell 2 concerns (0,1) (5,8) (4,6)
-    if (cellStates[2] === CELL_STATE.EMPTY &&
-        (cellStates[0] !== CELL_STATE.EMPTY && cellStates[0] + cellStates[1] === 0) &&
-        (cellStates[5] !== CELL_STATE.EMPTY && cellStates[5] + cellStates[8] === 0) &&
-        (cellStates[4] !== CELL_STATE.EMPTY && cellStates[4] + cellStates[6] === 0)
-    ) {
-        cellStates[2] = CELL_STATE.CATS;
-    }
-
-    // Cell 3 concerns (0,6) (4,7)
-    if (cellStates[3] === CELL_STATE.EMPTY &&
-        (cellStates[0] !== CELL_STATE.EMPTY && cellStates[0] + cellStates[6] === 0) &&
-        (cellStates[4] !== CELL_STATE.EMPTY && cellStates[4] + cellStates[7] === 0)
-    ) {
-        cellStates[3] = CELL_STATE.CATS;
-    }
-
-    // Cell 4 concerns (0,8) (1,7) (2,6) (3,5)
-    if (cellStates[4] === CELL_STATE.EMPTY &&
-        (cellStates[0] !== CELL_STATE.EMPTY && cellStates[0] + cellStates[8] === 0) &&
-        (cellStates[1] !== CELL_STATE.EMPTY && cellStates[1] + cellStates[7] === 0) &&
-        (cellStates[2] !== CELL_STATE.EMPTY && cellStates[2] + cellStates[6] === 0) &&
-        (cellStates[3] !== CELL_STATE.EMPTY && cellStates[3] + cellStates[5] === 0)
-    ) {
-        cellStates[4] = CELL_STATE.CATS;
-    }
-
-    // Cell 5 concerns (2,8) (3,4)
-    if (cellStates[5] === CELL_STATE.EMPTY &&
-        (cellStates[2] !== CELL_STATE.EMPTY && cellStates[2] + cellStates[8] === 0) &&
-        (cellStates[3] !== CELL_STATE.EMPTY && cellStates[3] + cellStates[4] === 0)
-    ) {
-        cellStates[5] = CELL_STATE.CATS;
-    }
-
-    // Cell 6 concerns (0,3) (2,4) (7,8)
-    if (cellStates[6] === CELL_STATE.EMPTY &&
-        (cellStates[0] !== CELL_STATE.EMPTY && cellStates[0] + cellStates[3] === 0) &&
-        (cellStates[2] !== CELL_STATE.EMPTY && cellStates[2] + cellStates[4] === 0) &&
-        (cellStates[7] !== CELL_STATE.EMPTY && cellStates[7] + cellStates[8] === 0)
-    ) {
-        cellStates[6] = CELL_STATE.CATS;
-    }
-
-    // Cell 7 concerns (1,4) (6,8)
-    if (cellStates[7] === CELL_STATE.EMPTY &&
-        (cellStates[1] !== CELL_STATE.EMPTY && cellStates[1] + cellStates[4] === 0) &&
-        (cellStates[6] !== CELL_STATE.EMPTY && cellStates[6] + cellStates[8] === 0)
-    ) {
-        cellStates[7] = CELL_STATE.CATS;
-    }
-
-    // Cell 8 concerns (0,4) (2,5) (6,7)
-    if (cellStates[8] === CELL_STATE.EMPTY &&
-        (cellStates[0] !== CELL_STATE.EMPTY && cellStates[0] + cellStates[4] === 0) &&
-        (cellStates[2] !== CELL_STATE.EMPTY && cellStates[2] + cellStates[5] === 0) &&
-        (cellStates[6] !== CELL_STATE.EMPTY && cellStates[6] + cellStates[7] === 0)
-    ) {
-        cellStates[8] = CELL_STATE.CATS;
-    }
-
-    if (cellStates.find(function (el) {
-        return el === CELL_STATE.EMPTY;
-    }) === CELL_STATE.EMPTY) {
-        return false;
-    } else {
-        updateGameState(GAME_STATE.CATS);
-        return true;
-    }
+    updateGameState(GAME_STATE.CATS);
+    return true;
 }
 
 function updateGameState(newGameState) {
@@ -539,7 +397,7 @@ function updateStylesheet(selector, property, value) {
     }
 
     logOut('theStylesheet', theStylesheet);
-    if(theStylesheet === undefined) {
+    if (theStylesheet === undefined) {
         return false;
     }
 
