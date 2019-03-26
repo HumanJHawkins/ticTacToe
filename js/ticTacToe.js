@@ -89,7 +89,7 @@ function handleDisplayRefresh() {
 
     //   https://docs.microsoft.com/en-us/windows/uwp/design/layout/screen-sizes-and-breakpoints-for-responsive-design
     let heightWidthRatio = windowHeight / windowWidth;
-    if (heightWidthRatio > .7) {
+    if (heightWidthRatio > .5) {
         // Tall Layout
         logOut('Using tall layout.');
         updateStylesheet("grid-container", "float", "none");
