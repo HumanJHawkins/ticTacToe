@@ -1,6 +1,3 @@
-// Kluge to avoid race condition until I find it.
-sleep(1000);
-
 // Globals
 let GAME_STATE = Object.freeze({
     "ERROR": 0,
@@ -132,73 +129,38 @@ function handleDisplayRefresh() {
 }
 
 function updateGameboard() {
+    let addClass = '';
+    if (gameState === GAME_STATE.CATS) {
+        addClass = ' gameTie';
+    }
+
     let gameboardHTML = '';
-    if (gameState === GAME_STATE.INPROGRESS) {
-        for (let i = 0; i < cells.length; i++) {
-            if (cells[i].state === CELL_STATE.EMPTY) {
-                gameboardHTML = gameboardHTML +
-                    '<grid-item onclick="handleMark(' + i + ')" class="' + cells[i].class +
-                    ' gameLetter" id="cell' + i + '"><div class="hidden">W</div></grid-item>\n';
-            } else if (cells[i].state === CELL_STATE.PLAYER_X) {
-                gameboardHTML = gameboardHTML +
-                    '<griditem onclick="handleMark(' + i + ')" class="' + cells[i].class +
-                    ' gameLetter" id="cell' + i + '"><div>X</div></griditem>\n';
-            } else if (cells[i].state === CELL_STATE.PLAYER_O) {
-                gameboardHTML = gameboardHTML +
-                    '<grid-item onclick="handleMark(' + i + ')" class="' + cells[i].class +
-                    ' gameLetter" id="cell' + i + '"><div>O</div></grid-item>\n';
-            } else {
-                alert('Error: GAME_STATE === IN_PROGRESS, but CELL_STATE is ' + cells[i].class + ').');
-            }
-        }
-    } else if (gameState === GAME_STATE.WIN) {
-        for (let i = 0; i < cells.length; i++) {
-            if (cells[i].state === CELL_STATE.EMPTY) {
-                gameboardHTML = gameboardHTML +
-                    '<grid-item onclick="handleMark(' + i + ')" class="' + cells[i].class +
-                    ' gameLetter" id="cell' + i + '"><div class="hidden">W</div></grid-item>\n';
-            } else if (cells[i].state === CELL_STATE.PLAYER_X) {
-                gameboardHTML = gameboardHTML +
-                    '<grid-item onclick="handleMark(' + i + ')" class="' + cells[i].class +
-                    ' gameLetter" id="cell' + i + '"><div>X</div></grid-item>\n';
-            } else if (cells[i].state === CELL_STATE.PLAYER_O) {
-                gameboardHTML = gameboardHTML +
-                    '<grid-item onclick="handleMark(' + i + ')" class="' + cells[i].class +
-                    ' gameLetter" id="cell' + i + '"><div>O</div></grid-item>\n';
-            } else if (cells[i].state === CELL_STATE.WIN_X) {
-                gameboardHTML = gameboardHTML +
-                    '<grid-item onclick="handleMark(' + i + ')" class="' + cells[i].class +
-                    ' gameLetter gameWin" id="cell' + i + '"><div>X</div></grid-item>\n';
-            } else if (cells[i].state === CELL_STATE.WIN_O) {
-                gameboardHTML = gameboardHTML +
-                    '<grid-item onclick="handleMark(' + i + ')" class="' + cells[i].class +
-                    ' gameLetter gameWin" id="cell' + i + '"><div>O</div></grid-item>\n';
-            } else {
-                alert('Error: GAME_STATE === WIN, but CELL_STATE is ' + cells[i].state + ').');
-            }
-        }
-    } else if (gameState === GAME_STATE.CATS) {
-        for (let i = 0; i < cells.length; i++) {
-            // There should be no case where a cell is empty at this point.
-            if (cells[i].state === CELL_STATE.EMPTY) {
-                gameboardHTML = gameboardHTML +
-                    '<grid-item onclick="handleMark(' + i + ')" class="' + cells[i].class +
-                    ' gameLetter" id="cell' + i + '"><div class="hidden gameTie">W</div></grid-item>\n';
-            } else if (cells[i].state === CELL_STATE.PLAYER_X) {
-                gameboardHTML = gameboardHTML +
-                    '<grid-item onclick="handleMark(' + i + ')" class="' + cells[i].class +
-                    ' gameLetter gameTie" id="cell' + i + '"><div>X</div></grid-item>\n';
-            } else if (cells[i].state === CELL_STATE.PLAYER_O) {
-                gameboardHTML = gameboardHTML +
-                    '<grid-item onclick="handleMark(' + i + ')" class="' + cells[i].class +
-                    ' gameLetter gameTie" id="cell' + i + '"><div>O</div></grid-item>\n';
-            } else {
-                alert('Error: GAME_STATE === CATS, but CELL_STATE is ' + cells[i].state + ').');
-            }
+    for (let i = 0; i < cells.length; i++) {
+        if (cells[i].state === CELL_STATE.EMPTY) {
+            gameboardHTML += '<grid-item onclick="handleMark(' + i + ')" class="' + cells[i].class + ' gameLetter' + addClass + '" id="cell' + i + '"><div class="hidden">W</div></grid-item>\n';
+        } else if (cells[i].state === CELL_STATE.PLAYER_X) {
+            gameboardHTML +=
+                '<grid-item onclick="handleMark(' + i + ')" class="' + cells[i].class +
+                ' gameLetter' + addClass + '" id="cell' + i + '"><div>X</div></grid-item>\n';
+        } else if (cells[i].state === CELL_STATE.PLAYER_O) {
+            gameboardHTML = gameboardHTML +
+                '<grid-item onclick="handleMark(' + i + ')" class="' + cells[i].class +
+                ' gameLetter' + addClass + '" id="cell' + i + '"><div>O</div></grid-item>\n';
+        } else if (cells[i].state === CELL_STATE.WIN_X) {
+            gameboardHTML = gameboardHTML +
+                '<grid-item onclick="handleMark(' + i + ')" class="' + cells[i].class +
+                ' gameLetter gameWin" id="cell' + i + '"><div>X</div></grid-item>\n';
+        } else if (cells[i].state === CELL_STATE.WIN_O) {
+            gameboardHTML = gameboardHTML +
+                '<grid-item onclick="handleMark(' + i + ')" class="' + cells[i].class +
+                ' gameLetter gameWin" id="cell' + i + '"><div>O</div></grid-item>\n';
+        } else {
+            alert('Error: GAME_STATE === WIN, but CELL_STATE is ' + cells[i].state + ').');
         }
     }
-    logOut(gameboardHTML);
-    document.getElementById('gridGameboard').innerHTML = gameboardHTML;
+
+logOut(gameboardHTML);
+document.getElementById('gridGameboard').innerHTML = gameboardHTML;
 }
 
 function showPreferences() {
@@ -211,11 +173,6 @@ function showHelp() {
 
 function showAbout() {
     dialogAbout.style.display = 'block';
-}
-
-function setGameState(newGameState) {
-    // Add error check that input is actually a game state.
-    gameState = newGameState;
 }
 
 function updateEnabledState() {
@@ -261,13 +218,13 @@ function setRowWin(cellA, cellB, cellC) {
         // playerTurn contains CELL_STATE for player. Adding GAME_STATE to this number results in CELL_STATE.WIN for
         // appropriate player.
         cells[cellA].state = cells[cellB].state = cells[cellC].state = playerTurn + GAME_STATE.WIN;
-        updateGameState(GAME_STATE.WIN);
+        setGameState(GAME_STATE.WIN);
     }
 }
 
 function updateCatsState() {
     // A winning game cannot be a cats game.
-    if(gameState === GAME_STATE.WIN) return false;
+    if (gameState === GAME_STATE.WIN) return false;
 
     // See commits prior to 2019/03/26 for function identifying useless rows. Turned out not to be fun.
     // Players like to play to the end without the computer telling them it's going to be a cats game.
@@ -278,15 +235,17 @@ function updateCatsState() {
         }
     }
 
-    updateGameState(GAME_STATE.CATS);
+    setGameState(GAME_STATE.CATS);
     return true;
 }
 
-function updateGameState(newGameState) {
+
+function setGameState(newGameState) {
     // TO DO: Add check that the GAME_STATE input is valid.
     //  gameState = GAME_STATE.contains(newGameState) ? newGameState : GAME_STATE.ERROR;
     gameState = newGameState;
 }
+
 
 function resetGame() {
     // If game is in progress, confirm reset.
@@ -416,9 +375,3 @@ function updateStylesheet(selector, property, value) {
 function randIntBetween(randMin, randMax) {
     return Math.floor(Math.random() * (randMax - randMin + 1) + randMin);
 }
-
-function sleep(ms) {
-    // From: https://stackoverflow.com/questions/951021/what-is-the-javascript-version-of-sleep
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
-
