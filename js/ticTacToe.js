@@ -182,7 +182,8 @@ function handleMark(cellNumber) {
 
     cells[cellNumber].state = playerTurn;    // Player turn is tracked by giving the player an appropriate CELL_STATE.
 
-    if (!updateWinStates()) {
+    // Ovekill, but a fun exercise.
+    if(!checkWin(cellNumber)) {
         playerTurn = -playerTurn;
     }
 
@@ -190,26 +191,22 @@ function handleMark(cellNumber) {
     handleDisplayRefresh();
 }
 
-function updateWinStates() {
-    setRowWin(0, 1, 2);
-    setRowWin(0, 3, 6);
-    setRowWin(0, 4, 8);
-    setRowWin(1, 4, 7);
-    setRowWin(2, 4, 6);
-    setRowWin(2, 5, 8);
-    setRowWin(3, 4, 5);
-    setRowWin(6, 7, 8);
-}
+function checkWin(cellNumber) {
+    let win = false;
+    for(let i = 0; i < cells[cellNumber].inRows.length; i++) {
+        if(cells[cellNumber].state === cells[cells[cellNumber].inRows[i][0]].state &&
+            cells[cellNumber].state === cells[cells[cellNumber].inRows[i][1]].state) {
+            win = true;
+            cells[cellNumber].state = cells[cells[cellNumber].inRows[i][0]].state =
+                cells[cells[cellNumber].inRows[i][1]].state = playerTurn + GAME_STATE.WIN;
+        }
+    }
 
-function setRowWin(cellA, cellB, cellC) {
-    // Marked cell states are either 1 or -1, and no CELL_STATE is 2 or 3. So, if the absolute value of the sum of any
-    //   row is 3, it is a winning row.
-    if (Math.abs(cells[cellA].state + cells[cellB].state + cells[cellC].state) === 3) {
-        // playerTurn contains CELL_STATE for player. Adding GAME_STATE to this number results in CELL_STATE.WIN for
-        // appropriate player.
-        cells[cellA].state = cells[cellB].state = cells[cellC].state = playerTurn + GAME_STATE.WIN;
+    if(win === true) {
         setGameState(GAME_STATE.WIN);
     }
+
+    return win;
 }
 
 function updateCatsState() {
@@ -251,6 +248,66 @@ function resetGame() {
         newGame();
     }
 }
+
+function updateDifficulty() {
+    if (gameState === GAME_STATE.INPROGRESS) {
+        if (confirm("Apply this difficulty change to the current game?")) {
+            // Dismiss the preferences dialog.
+            dialogPreferences.style.display = "none";
+            gameDifficulty = parseInt(document.getElementById('gameDifficulty').value);
+            handleDisplayRefresh();
+            return;
+        } else {
+            return;
+        }
+    }
+
+    gameDifficulty = parseInt(document.getElementById('gameDifficulty').value);
+    // drawHangman();
+}
+
+function updateStylesheet(selector, property, value) {
+    // Adds or changes style in highest index of stylesheet.
+    let theStylesheet = document.styleSheets[(document.styleSheets.length - 1)];
+    let waitCount = 0;
+    while (theStylesheet === undefined && waitCount < 4) {
+        // Try again for up to 1 second if stylesheet wasn't loaded yet.
+        waitCount++;
+        // sleep(250);
+        theStylesheet = document.styleSheets[(document.styleSheets.length - 1)];
+    }
+
+    logOut('theStylesheet', theStylesheet);
+    if (theStylesheet === undefined) {
+        return false;
+    }
+
+    for (let i = 0; i < theStylesheet.cssRules.length; i++) {
+        let rule = theStylesheet.cssRules[i];
+        if (rule.selectorText === selector) {
+            rule.style[property] = value;
+            return true;
+        }
+    }
+    theStylesheet.insertRule(selector + " { " + property + ": " + value + "; }", 0);
+    return true;
+}
+
+window.onclick = function (event) {
+    // When the user clicks anywhere outside of the dialogPreferences, close it
+    if (event.target === dialogPreferences) {
+        dialogPreferences.style.display = "none";
+    }
+    // Or help window
+    if (event.target === dialogHelp) {
+        dialogHelp.style.display = "none";
+    }
+    // Or about window
+    if (event.target === dialogAbout) {
+        dialogAbout.style.display = "none";
+    }
+};
+
 
 // Based on https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/keyCode
 window.addEventListener("keydown", function (event) {
@@ -301,75 +358,33 @@ addEventListener('resize', function () {
     // updateEnabledState();
 });
 
-window.onclick = function (event) {
-    // When the user clicks anywhere outside of the dialogPreferences, close it
-    if (event.target === dialogPreferences) {
-        dialogPreferences.style.display = "none";
-    }
-    // Or help window
-    if (event.target === dialogHelp) {
-        dialogHelp.style.display = "none";
-    }
-    // Or about window
-    if (event.target === dialogAbout) {
-        dialogAbout.style.display = "none";
-    }
-};
 
-function updateDifficulty() {
-    if (gameState === GAME_STATE.INPROGRESS) {
-        if (confirm("Apply this difficulty change to the current game?")) {
-            // Dismiss the preferences dialog.
-            dialogPreferences.style.display = "none";
-            gameDifficulty = parseInt(document.getElementById('gameDifficulty').value);
-            handleDisplayRefresh();
-            return;
-        } else {
-            return;
-        }
-    }
+// We'll probably need this later... Or not...
+// function randIntBetween(randMin, randMax) {
+//     return Math.floor(Math.random() * (randMax - randMin + 1) + randMin);
+// }
+//
 
-    gameDifficulty = parseInt(document.getElementById('gameDifficulty').value);
-    // drawHangman();
-}
-
-
-function updateStylesheet(selector, property, value) {
-    // Adds or changes style in highest index of stylesheet.
-    let theStylesheet = document.styleSheets[(document.styleSheets.length - 1)];
-    let waitCount = 0;
-    while (theStylesheet === undefined && waitCount < 4) {
-        // Try again for up to 1 second if stylesheet wasn't loaded yet.
-        waitCount++;
-        // sleep(250);
-        theStylesheet = document.styleSheets[(document.styleSheets.length - 1)];
-    }
-
-    logOut('theStylesheet', theStylesheet);
-    if (theStylesheet === undefined) {
-        return false;
-    }
-
-    for (let i = 0; i < theStylesheet.cssRules.length; i++) {
-        let rule = theStylesheet.cssRules[i];
-        if (rule.selectorText === selector) {
-            rule.style[property] = value;
-            return true;
-        }
-    }
-    theStylesheet.insertRule(selector + " { " + property + ": " + value + "; }", 0);
-    return true;
-}
-
-// We'll probably need this later...
-function randIntBetween(randMin, randMax) {
-    return Math.floor(Math.random() * (randMax - randMin + 1) + randMin);
-}
-
-function logOut(desc = '', data = '') {
-    let separator = ': ';
-    if (desc === '' || data === '') {
-        separator = '';
-    }
-    console.log(desc + separator + data)
-}
+// Full check version. Obsolete, but illustrates another option.
+//
+// function updateWinStates() {
+//     setRowWin(0, 1, 2);
+//     setRowWin(0, 3, 6);
+//     setRowWin(0, 4, 8);
+//     setRowWin(1, 4, 7);
+//     setRowWin(2, 4, 6);
+//     setRowWin(2, 5, 8);
+//     setRowWin(3, 4, 5);
+//     setRowWin(6, 7, 8);
+// }
+//
+// function setRowWin(cellA, cellB, cellC) {
+//     // Marked cell states are either 1 or -1, and no CELL_STATE is 2 or 3. So, if the absolute value of the sum of any
+//     //   row is 3, it is a winning row.
+//     if (Math.abs(cells[cellA].state + cells[cellB].state + cells[cellC].state) === 3) {
+//         // playerTurn contains CELL_STATE for player. Adding GAME_STATE to this number results in CELL_STATE.WIN for
+//         // appropriate player.
+//         cells[cellA].state = cells[cellB].state = cells[cellC].state = playerTurn + GAME_STATE.WIN;
+//         setGameState(GAME_STATE.WIN);
+//     }
+// }
