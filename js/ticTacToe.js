@@ -15,16 +15,17 @@ let CELL_STATE = Object.freeze({
 });
 
 let cells = [
-    {state: CELL_STATE.EMPTY, class: 'top left', inRows: [[1, 2], [3, 6], [4, 8]]},
-    {state: CELL_STATE.EMPTY, class: 'top', inRows: [[0, 1], [4, 7]]},
-    {state: CELL_STATE.EMPTY, class: 'top right', inRows: [[0, 1], [4, 6], [5, 8]]},
-    {state: CELL_STATE.EMPTY, class: 'left', inRows: [[0, 6], [4, 5]]},
-    {state: CELL_STATE.EMPTY, class: '', inRows: [[0, 8], [1, 7], [2, 6], [3, 5]]},
-    {state: CELL_STATE.EMPTY, class: 'right', inRows: [[2, 8], [3, 4]]},
-    {state: CELL_STATE.EMPTY, class: 'bottom left', inRows: [[0, 3], [7, 8]]},
-    {state: CELL_STATE.EMPTY, class: 'bottom', inRows: [[1, 4], [6, 8]]},
-    {state: CELL_STATE.EMPTY, class: 'bottom right', inRows: [[0, 4], [2, 5], [6, 7]]},
+    {state: CELL_STATE.EMPTY, cellClass: 'top left', inRows: [[1, 2], [3, 6], [4, 8]]},
+    {state: CELL_STATE.EMPTY, cellClass: 'top', inRows: [[0, 1], [4, 7]]},
+    {state: CELL_STATE.EMPTY, cellClass: 'top right', inRows: [[0, 1], [4, 6], [5, 8]]},
+    {state: CELL_STATE.EMPTY, cellClass: 'left', inRows: [[0, 6], [4, 5]]},
+    {state: CELL_STATE.EMPTY, cellClass: '', inRows: [[0, 8], [1, 7], [2, 6], [3, 5]]},
+    {state: CELL_STATE.EMPTY, cellClass: 'right', inRows: [[2, 8], [3, 4]]},
+    {state: CELL_STATE.EMPTY, cellClass: 'bottom left', inRows: [[0, 3], [7, 8]]},
+    {state: CELL_STATE.EMPTY, cellClass: 'bottom', inRows: [[1, 4], [6, 8]]},
+    {state: CELL_STATE.EMPTY, cellClass: 'bottom right', inRows: [[0, 4], [2, 5], [6, 7]]},
 ];
+
 
 let gameState;
 let gameDifficulty;
@@ -81,7 +82,7 @@ function handleDisplayRefresh() {
     let heightWidthRatio = windowHeight / windowWidth;
     if (heightWidthRatio > .5) {
         // Tall Layout
-        logOut('Using tall layout.');
+        consoleOutput('Using tall layout.');
         updateStylesheet("grid-container", "float", "none");
         updateStylesheet("grid-container", "width", "80vw");
         updateStylesheet("grid-container", "height", "80vw");
@@ -92,7 +93,7 @@ function handleDisplayRefresh() {
         pageHTML = controlsHTML + '<grid-container id="gridGameboard"></grid-container>';
     } else {
         // Wide Layout
-        logOut('Using wide layout.');
+        consoleOutput('Using wide layout.');
         updateStylesheet("grid-container", "float", "left");
         updateStylesheet("grid-container", "width", "80vh");
         updateStylesheet("grid-container", "height", "80vh");
@@ -127,29 +128,29 @@ function updateGameboard() {
     let gameboardHTML = '';
     for (let i = 0; i < cells.length; i++) {
         if (cells[i].state === CELL_STATE.EMPTY) {
-            gameboardHTML += '<grid-item onclick="handleMark(' + i + ')" class="' + cells[i].class + ' gameLetter' + addClass + '" id="cell' + i + '"><div class="hidden">W</div></grid-item>\n';
+            gameboardHTML += '<grid-item onclick="handleMark(' + i + ')" class="' + cells[i].cellClass + ' gameLetter' + addClass + '" id="cell' + i + '"><div class="hidden">W</div></grid-item>\n';
         } else if (cells[i].state === CELL_STATE.PLAYER_X) {
             gameboardHTML +=
-                '<grid-item onclick="handleMark(' + i + ')" class="' + cells[i].class +
+                '<grid-item onclick="handleMark(' + i + ')" class="' + cells[i].cellClass +
                 ' gameLetter' + addClass + '" id="cell' + i + '"><div>X</div></grid-item>\n';
         } else if (cells[i].state === CELL_STATE.PLAYER_O) {
             gameboardHTML = gameboardHTML +
-                '<grid-item onclick="handleMark(' + i + ')" class="' + cells[i].class +
+                '<grid-item onclick="handleMark(' + i + ')" class="' + cells[i].cellClass +
                 ' gameLetter' + addClass + '" id="cell' + i + '"><div>O</div></grid-item>\n';
         } else if (cells[i].state === CELL_STATE.WIN_X) {
             gameboardHTML = gameboardHTML +
-                '<grid-item onclick="handleMark(' + i + ')" class="' + cells[i].class +
+                '<grid-item onclick="handleMark(' + i + ')" class="' + cells[i].cellClass +
                 ' gameLetter gameWin" id="cell' + i + '"><div>X</div></grid-item>\n';
         } else if (cells[i].state === CELL_STATE.WIN_O) {
             gameboardHTML = gameboardHTML +
-                '<grid-item onclick="handleMark(' + i + ')" class="' + cells[i].class +
+                '<grid-item onclick="handleMark(' + i + ')" class="' + cells[i].cellClass +
                 ' gameLetter gameWin" id="cell' + i + '"><div>O</div></grid-item>\n';
         } else {
             alert('Error: GAME_STATE === WIN, but CELL_STATE is ' + cells[i].state + ').');
         }
     }
 
-logOut(gameboardHTML);
+consoleOutput(gameboardHTML);
 document.getElementById('gridGameboard').innerHTML = gameboardHTML;
 }
 
@@ -171,8 +172,8 @@ function updateEnabledState() {
 }
 
 function handleMark(cellNumber) {
-    logOut('handleMark gameState', gameState);
-    logOut('handleMark cells[' + cellNumber + '].state', cells[cellNumber].state);
+    consoleOutput('handleMark gameState', gameState);
+    consoleOutput('handleMark cells[' + cellNumber + '].state', cells[cellNumber].state);
 
     // Ignore marks when game over or the cell is already marked, etc.
     if (gameState !== GAME_STATE.INPROGRESS ||
@@ -277,7 +278,7 @@ function updateStylesheet(selector, property, value) {
         theStylesheet = document.styleSheets[(document.styleSheets.length - 1)];
     }
 
-    logOut('theStylesheet', theStylesheet);
+    consoleOutput('theStylesheet', theStylesheet);
     if (theStylesheet === undefined) {
         return false;
     }
@@ -388,3 +389,6 @@ addEventListener('resize', function () {
 //         setGameState(GAME_STATE.WIN);
 //     }
 // }
+function consoleOutput(theName, theThing) {
+    console.log(theName + typeof(theThing));
+}
