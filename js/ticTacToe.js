@@ -16,12 +16,12 @@ let CELL_STATE = Object.freeze({
 
 let cells = [
     {state: CELL_STATE.EMPTY, cellClass: 'top left', inRows: [[1, 2], [3, 6], [4, 8]]},
-    {state: CELL_STATE.EMPTY, cellClass: 'top', inRows: [[0, 1], [4, 7]]},
+    {state: CELL_STATE.EMPTY, cellClass: 'top', inRows: [[0, 2], [4, 7]]},
     {state: CELL_STATE.EMPTY, cellClass: 'top right', inRows: [[0, 1], [4, 6], [5, 8]]},
     {state: CELL_STATE.EMPTY, cellClass: 'left', inRows: [[0, 6], [4, 5]]},
     {state: CELL_STATE.EMPTY, cellClass: '', inRows: [[0, 8], [1, 7], [2, 6], [3, 5]]},
     {state: CELL_STATE.EMPTY, cellClass: 'right', inRows: [[2, 8], [3, 4]]},
-    {state: CELL_STATE.EMPTY, cellClass: 'bottom left', inRows: [[0, 3], [7, 8]]},
+    {state: CELL_STATE.EMPTY, cellClass: 'bottom left', inRows: [[0, 3], [7, 8], [2, 4]]},
     {state: CELL_STATE.EMPTY, cellClass: 'bottom', inRows: [[1, 4], [6, 8]]},
     {state: CELL_STATE.EMPTY, cellClass: 'bottom right', inRows: [[0, 4], [2, 5], [6, 7]]},
 ];
