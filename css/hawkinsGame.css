@@ -1,7 +1,7 @@
 /* Dimensions consolidate as: top right bottom left. */
 body {
     text-align: center;
-    font-family: sans-serif;
+    font-family: "Lucida Console", Monaco, monospace;
     font-size: calc(4px + .5vw); /* Results in .5vw with minimum of 4px */
     margin: 2vw;
     background-image: url("../image/PubDomain_FadedRock.jpg");
